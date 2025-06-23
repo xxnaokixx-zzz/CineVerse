@@ -107,7 +107,7 @@ export default function MovieDetailPage({ params }: PageProps) {
       user_id: user.id,
       media_id: movie?.id,
       media_type: 'movie',
-      status: 'Want to Watch',
+      status: 'Unselected',
     });
     setAdding(false);
     if (!error) setAdded(true);
@@ -229,14 +229,14 @@ export default function MovieDetailPage({ params }: PageProps) {
 
             <div>
               <div className="bg-gray-800/50 p-6 rounded-lg">
-                <h3 className="text-xl font-bold mb-4">Details</h3>
+                <h3 className="text-xl font-bold mb-4">詳細</h3>
                 <div className="space-y-3 text-sm text-gray-300">
-                  <p><strong className="font-semibold text-white">Director:</strong> {director ? director.name : 'N/A'}</p>
-                  <p><strong className="font-semibold text-white">Writer:</strong> {writers && writers.length > 0 ? writers.map((w: Crew) => w.name).join(', ') : 'N/A'}</p>
-                  <p><strong className="font-semibold text-white">Budget:</strong> {formatCurrency(movie.budget)}</p>
-                  <p><strong className="font-semibold text-white">Revenue:</strong> {formatCurrency(movie.revenue)}</p>
-                  <p><strong className="font-semibold text-white">Status:</strong> {movie.status}</p>
-                  <p><strong className="font-semibold text-white">Original Language:</strong> {movie.original_language.toUpperCase()}</p>
+                  <p><strong className="font-semibold text-white">監督:</strong> {director ? director.name : 'N/A'}</p>
+                  <p><strong className="font-semibold text-white">脚本:</strong> {writers && writers.length > 0 ? writers.map((w: Crew) => w.name).join(', ') : 'N/A'}</p>
+                  <p><strong className="font-semibold text-white">制作費:</strong> {formatCurrency(movie.budget)}</p>
+                  <p><strong className="font-semibold text-white">興行収入:</strong> {formatCurrency(movie.revenue)}</p>
+                  <p><strong className="font-semibold text-white">ステータス:</strong> {movie.status}</p>
+                  <p><strong className="font-semibold text-white">オリジナル言語:</strong> {movie.original_language.toUpperCase()}</p>
                 </div>
               </div>
             </div>

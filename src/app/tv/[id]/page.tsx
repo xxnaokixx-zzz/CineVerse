@@ -106,7 +106,7 @@ export default function TVShowDetailPage({ params }: PageProps) {
       user_id: user.id,
       media_id: tvShow?.id,
       media_type: 'tv',
-      status: 'Want to Watch',
+      status: 'Unselected',
     });
     setAdding(false);
     if (!error) setAdded(true);

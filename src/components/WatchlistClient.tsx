@@ -257,9 +257,10 @@ export default function WatchlistClient({ items }: { items: any[] }) {
               <div className="flex gap-2 items-center mt-2">
                 <select
                   className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`}
-                  value={item.status}
+                  value={item.status || 'Unselected'}
                   onChange={e => handleStatusChange(item.id, e.target.value)}
                 >
+                  <option value="Unselected">ステータスを選択</option>
                   {STATUS_SELECT_OPTIONS.filter(opt => opt.value !== 'all' && opt.value !== 'Favorite').map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
