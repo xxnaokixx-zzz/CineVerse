@@ -18,7 +18,7 @@ export default function TrendingSection({ movies }: TrendingSectionProps) {
           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {movies.slice(0, 5).map((movie, index) => (
+          {movies.slice(0, 5).map((movie) => (
             <MovieCard
               key={movie.id}
               id={movie.id}
@@ -26,7 +26,7 @@ export default function TrendingSection({ movies }: TrendingSectionProps) {
               title={movie.title}
               rating={movie.vote_average.toFixed(1)}
               year={movie.release_date.split('-')[0]}
-              trendingRank={index + 1}
+              mediaType="movie"
             />
           ))}
         </div>

@@ -8,6 +8,7 @@ import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaUser } from 'react
 import { notFound } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
+import { createClient } from '@/lib/supabase/client';
 
 type PageProps = {
   params: Promise<{
@@ -41,6 +42,8 @@ export default function MovieDetailPage({ params }: PageProps) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -71,6 +74,45 @@ export default function MovieDetailPage({ params }: PageProps) {
     }
     fetchData();
   }, [id]);
+
+  // 追加済み判定（初回マウント時にチェック）
+  useEffect(() => {
+    async function checkWatchlist() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('watchlist_items')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('media_id', movie?.id)
+        .eq('media_type', 'movie')
+        .maybeSingle();
+      if (data) setAdded(true);
+    }
+    if (movie) checkWatchlist();
+  }, [movie]);
+
+  // 追加処理
+  const handleAddToWatchlist = async () => {
+    setAdding(true);
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert('ログインが必要です');
+      setAdding(false);
+      return;
+    }
+    const { error } = await supabase.from('watchlist_items').insert({
+      user_id: user.id,
+      media_id: movie?.id,
+      media_type: 'movie',
+      status: 'Want to Watch',
+    });
+    setAdding(false);
+    if (!error) setAdded(true);
+    else alert('追加に失敗しました: ' + error.message);
+  };
 
   if (loading) {
     return <div className="min-h-screen bg-dark text-white flex items-center justify-center">Loading...</div>;
@@ -136,8 +178,13 @@ export default function MovieDetailPage({ params }: PageProps) {
                       <FaPlay className="mr-2" /> Watch Trailer
                     </button>
                   )}
-                  <button className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm">
-                    <FaBookmark className="mr-2" /> Add to Watchlist
+                  <button
+                    className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm ${added ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    onClick={handleAddToWatchlist}
+                    disabled={added || adding}
+                  >
+                    <FaBookmark className="mr-2" />
+                    {added ? 'Added' : adding ? 'Adding...' : 'Add to Watchlist'}
                   </button>
                 </div>
               </div>

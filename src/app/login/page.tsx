@@ -18,6 +18,15 @@ export default function LoginPage() {
   const [socialLoginMessage, setSocialLoginMessage] = useState('');
   const router = useRouter();
 
+  // URLからリダイレクト先を取得
+  const getRedirectTo = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('redirectTo') || '/';
+    }
+    return '/';
+  };
+
   const handleSocialLoginClick = () => {
     setSocialLoginMessage('随時対応予定です。一旦メールアドレスからログインをお願いします');
     setTimeout(() => {
@@ -47,15 +56,28 @@ export default function LoginPage() {
     if (isValid) {
       setLoading(true);
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
+      console.log('[LOGIN] signInWithPassword start', { email });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      console.log('[LOGIN] signInWithPassword result', { data, error });
+
       if (error) {
+        setLoading(false);
         setErrors({ ...newErrors, general: error.message });
-      } else {
+        console.log('[LOGIN] error after signInWithPassword', error);
+      } else if (data.session) {
+        setLoading(false);
         setSuccess(true);
-        setTimeout(() => {
-          router.push('/');
-        }, 1000);
+        const redirectTo = getRedirectTo();
+        console.log('[LOGIN] redirecting to', redirectTo);
+        router.push(redirectTo);
+        console.log('[LOGIN] pushed!');
+      } else {
+        setLoading(false);
+        setErrors({ ...newErrors, general: 'Failed to establish session. Please try again.' });
+        console.log('[LOGIN] session missing after signInWithPassword');
       }
     }
   };

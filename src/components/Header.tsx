@@ -1,20 +1,90 @@
 'use client'
-import { useState } from 'react'
-import { FaFilm, FaChevronDown, FaBars, FaSearch } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
+import { FaFilm, FaChevronDown, FaBars, FaSearch, FaSignOutAlt, FaUserCircle, FaTrash } from 'react-icons/fa'
 import { FaRegUser } from 'react-icons/fa6'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchQuery, setMobileSearchQuery] = useState('')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const router = useRouter()
   const pathname = usePathname()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUser(user)
+        // プロフィール情報を取得
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single()
+
+        if (profile?.avatar_url) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(profile.avatar_url)
+          setAvatarUrl(publicUrl)
+        }
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('本当にアカウントを削除しますか？この操作は取り消せません。')) {
+      try {
+        // アバターの削除
+        if (avatarUrl) {
+          const oldPath = avatarUrl.split('/').pop()
+          if (oldPath) {
+            await supabase.storage
+              .from('avatars')
+              .remove([`${user.id}/${oldPath}`])
+          }
+        }
+
+        // アカウントの削除
+        const response = await fetch('/api/delete-account', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error('アカウントの削除に失敗しました')
+        }
+
+        await supabase.auth.signOut()
+        router.push('/login')
+      } catch (error) {
+        console.error('Error deleting account:', error)
+        alert('アカウントの削除中にエラーが発生しました。')
+      }
+    }
+  }
 
   const handleSearch = (e: React.FormEvent, isMobile = false) => {
     e.preventDefault()
@@ -34,9 +104,6 @@ export default function Header() {
     { name: 'Drama', href: '/drama' },
     { name: 'Watchlist', href: '/watchlist' },
   ]
-
-  const categories = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror']
-  const accountLinks = ['Profile', 'Favorites', 'Settings', 'Sign Out']
 
   return (
     <header className="bg-darkgray sticky top-0 z-50 shadow-lg">
@@ -58,20 +125,6 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
-            <div className="relative group">
-              <button className="font-medium hover:text-primary transition-colors flex items-center">
-                Categories <FaChevronDown className="ml-1 text-xs" />
-              </button>
-              <div className="absolute left-0 mt-2 w-48 bg-darkgray rounded-md shadow-lg hidden group-hover:block">
-                <div className="py-1">
-                  {categories.map(cat => (
-                    <Link key={cat} href={`/category/${cat.toLowerCase()}`} className="block px-4 py-2 hover:bg-lightgray cursor-pointer">
-                      {cat}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -88,24 +141,56 @@ export default function Header() {
             <button onClick={toggleMobileSearch} className="md:hidden text-gray-300 hover:text-white">
               <FaSearch className="text-xl" />
             </button>
-            <div className="relative group">
-              <button className="flex items-center space-x-2 focus:outline-none">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                  <FaRegUser />
+
+            <div className="relative">
+              <button
+                className="flex items-center space-x-2 focus:outline-none"
+                onClick={toggleDropdown}
+                type="button"
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
+                  {avatarUrl ? (
+                    <Image
+                      src={avatarUrl}
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <FaRegUser />
+                  )}
                 </div>
-                <span className="hidden md:inline-block">Account</span>
-                <FaChevronDown className="hidden md:inline-block text-xs" />
               </button>
-              <div className="absolute right-0 mt-2 w-48 bg-darkgray rounded-md shadow-lg hidden group-hover:block">
-                <div className="py-1">
-                  {accountLinks.map(item => (
-                    <Link key={item} href={`/${item.toLowerCase().replace(' ', '-')}`} className="block px-4 py-2 hover:bg-lightgray cursor-pointer">
-                      {item}
-                    </Link>
-                  ))}
+
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-darkgray rounded-lg shadow-lg py-2 border border-gray-700">
+                  <Link
+                    href="/account"
+                    className="flex items-center px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <FaUserCircle className="mr-2" />
+                    プロフィール
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
+                  >
+                    <FaSignOutAlt className="mr-2" />
+                    ログアウト
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-700 cursor-pointer"
+                  >
+                    <FaTrash className="mr-2" />
+                    退会
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
+
             <button onClick={toggleMobileMenu} className="md:hidden">
               <FaBars className="text-xl" />
             </button>
@@ -140,19 +225,6 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
-              <div className="relative group">
-                <button className="font-medium hover:text-primary transition-colors text-left flex items-center justify-between w-full">
-                  Categories
-                  <FaChevronDown className="text-xs" />
-                </button>
-                <div className="pl-4 space-y-2 mt-1 hidden group-focus-within:block">
-                  {categories.map(cat => (
-                    <Link key={cat} href={`/category/${cat.toLowerCase()}`} className="block hover:text-primary cursor-pointer">
-                      {cat}
-                    </Link>
-                  ))}
-                </div>
-              </div>
             </nav>
           </div>
         )}

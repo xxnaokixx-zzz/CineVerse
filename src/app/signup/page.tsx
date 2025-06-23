@@ -89,11 +89,28 @@ export default function SignupPage() {
       setErrors(newErrors);
       return;
     }
-    // 成功時は即サクセス画面へ遷移
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim(),
+        },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      setErrors({ ...newErrors, general: error.message });
+      return;
+    }
+    setSuccess(true);
     const name = encodeURIComponent(`${firstName} ${lastName}`.trim());
     const mail = encodeURIComponent(email);
     router.push(`/signup-success?name=${name}&email=${mail}`);
-    // 以降のSupabase API呼び出しは省略またはサクセス画面で実行
   };
 
   return (
