@@ -26,11 +26,11 @@ export default function DeleteAccount() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, reason }),
       });
-      if (!res.ok) throw new Error("Failed to delete account");
+      if (!res.ok) throw new Error("アカウントの削除に失敗しました");
       setSuccess(true);
       // 必要ならリダイレクトやログアウト処理
     } catch (err: any) {
-      setError(err.message || "Failed to delete account");
+      setError(err.message || "アカウントの削除に失敗しました");
     } finally {
       setLoading(false);
     }
@@ -44,104 +44,78 @@ export default function DeleteAccount() {
           <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <i className="fa-solid fa-exclamation-triangle text-3xl text-white"></i>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Delete Your Account</h1>
-          <p className="text-gray-400 text-lg">This action cannot be undone. Please read carefully before proceeding.</p>
+          <h1 className="text-3xl font-bold mb-2">アカウントを削除する</h1>
+          <p className="text-gray-400 text-lg">この操作は元に戻せません。内容をよくご確認のうえ、進めてください。</p>
         </div>
 
         {/* What Will Be Deleted */}
         <div className="bg-red-900/20 border border-red-600/30 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-red-400 mb-4 flex items-center">
             <i className="fa-solid fa-trash mr-2"></i>
-            What will be permanently deleted
+            完全に削除されるもの
           </h2>
           <ul className="space-y-3 text-gray-300">
             <li className="flex items-start">
               <i className="fa-solid fa-circle text-red-400 text-xs mt-2 mr-3"></i>
-              <span>Your profile information and account details</span>
+              <span>あなたのプロフィール情報およびアカウント詳細</span>
             </li>
             <li className="flex items-start">
               <i className="fa-solid fa-circle text-red-400 text-xs mt-2 mr-3"></i>
-              <span>All your watchlists and saved movies/anime</span>
+              <span>すべてのウォッチリストおよび保存した映画・アニメ</span>
             </li>
             <li className="flex items-start">
               <i className="fa-solid fa-circle text-red-400 text-xs mt-2 mr-3"></i>
-              <span>Your reviews and ratings</span>
+              <span>あなたのレビューおよび評価</span>
             </li>
             <li className="flex items-start">
               <i className="fa-solid fa-circle text-red-400 text-xs mt-2 mr-3"></i>
-              <span>Your viewing history and preferences</span>
+              <span>視聴履歴および視聴傾向</span>
             </li>
             <li className="flex items-start">
               <i className="fa-solid fa-circle text-red-400 text-xs mt-2 mr-3"></i>
-              <span>Any premium subscription benefits</span>
+              <span>プレミアム会員特典</span>
             </li>
           </ul>
         </div>
 
-        {/* Alternative Options */}
-        <div className="bg-darkgray rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center">
-            <i className="fa-solid fa-lightbulb text-yellow-400 mr-2"></i>
-            Consider these alternatives
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-start p-4 bg-lightgray rounded-lg">
-              <i className="fa-solid fa-pause text-blue-400 mt-1 mr-3"></i>
-              <div>
-                <h3 className="font-semibold mb-1">Temporarily deactivate your account</h3>
-                <p className="text-gray-400 text-sm">Hide your profile while keeping your data safe. You can reactivate anytime.</p>
-                <button className="text-blue-400 hover:text-blue-300 text-sm mt-2">Learn more</button>
-              </div>
-            </div>
-            <div className="flex items-start p-4 bg-lightgray rounded-lg">
-              <i className="fa-solid fa-download text-green-400 mt-1 mr-3"></i>
-              <div>
-                <h3 className="font-semibold mb-1">Download your data</h3>
-                <p className="text-gray-400 text-sm">Export your watchlists, reviews, and preferences before deletion.</p>
-                <button className="text-green-400 hover:text-green-300 text-sm mt-2">Download data</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Deletion Form */}
         <div className="bg-darkgray rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4 text-red-400">Confirm Account Deletion</h2>
+          <h2 className="text-xl font-bold mb-4 text-red-400">アカウント削除の確認</h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium mb-2">Type "DELETE" to confirm</label>
+              <label className="block text-sm font-medium mb-2">「DELETE」と入力して確認</label>
               <input
                 type="text"
                 value={confirmText}
                 onChange={e => setConfirmText(e.target.value)}
-                placeholder="Type DELETE here"
+                placeholder="ここにDELETEと入力してください"
                 className="w-full bg-lightgray rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Enter your password</label>
+              <label className="block text-sm font-medium mb-2">パスワードを入力</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Your password"
+                placeholder="あなたのパスワード"
                 className="w-full bg-lightgray rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Reason for leaving (optional)</label>
+              <label className="block text-sm font-medium mb-2">退会理由（任意）</label>
               <select
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 className="w-full bg-lightgray rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
-                <option value="">Select a reason</option>
-                <option>Not using the service enough</option>
-                <option>Found a better alternative</option>
-                <option>Privacy concerns</option>
-                <option>Too expensive</option>
-                <option>Technical issues</option>
-                <option>Other</option>
+                <option value="">理由を選択してください</option>
+                <option>あまり利用しなくなった</option>
+                <option>他のサービスの方が良かった</option>
+                <option>プライバシーが心配</option>
+                <option>料金が高い</option>
+                <option>技術的な問題</option>
+                <option>その他</option>
               </select>
             </div>
             <div className="flex items-start">
@@ -153,27 +127,29 @@ export default function DeleteAccount() {
                 className="mt-1 mr-3"
               />
               <label htmlFor="confirmCheckbox" className="text-sm text-gray-300">
-                I understand that this action is permanent and cannot be undone. All my data will be permanently deleted.
+                この操作が永久的で元に戻せないこと、すべてのデータが完全に削除されることを理解しました
               </label>
             </div>
             {error && (
               <div className="text-red-400 text-sm">
                 {error === 'Unauthorized'
                   ? 'セッションが切れています。再度ログインしてください。'
-                  : error}
+                  : error === 'Password is incorrect.'
+                    ? 'パスワードが違います'
+                    : error}
               </div>
             )}
-            {success && <div className="text-green-400 text-sm">Account deleted successfully.</div>}
+            {success && <div className="text-green-400 text-sm">アカウントの削除が完了しました。</div>}
             <div className="flex space-x-4 pt-4">
               <button type="button" className="flex-1 bg-gray-600 hover:bg-gray-500 transition-colors py-3 rounded-lg font-medium">
-                Cancel
+                キャンセル
               </button>
               <button
                 type="submit"
                 disabled={!isFormValid || loading}
                 className="flex-1 bg-red-600 hover:bg-red-700 transition-colors py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Deleting..." : "Delete Account"}
+                {loading ? "削除中..." : "アカウントを削除する"}
               </button>
             </div>
           </form>
