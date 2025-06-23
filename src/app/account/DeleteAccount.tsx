@@ -9,13 +9,21 @@ export default function DeleteAccount() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [shake, setShake] = useState(false);
 
   const isTextValid = confirmText.toUpperCase() === "DELETE";
   const isFormValid = isTextValid && checked && password.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      if (!isTextValid) {
+        setError('confirmText');
+      }
+      return;
+    }
     setLoading(true);
     setError("");
     setSuccess(false);
@@ -25,12 +33,19 @@ export default function DeleteAccount() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, reason }),
+        credentials: "include",
       });
-      if (!res.ok) throw new Error("アカウントの削除に失敗しました");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "アカウントの削除に失敗しました");
       setSuccess(true);
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
       // 必要ならリダイレクトやログアウト処理
     } catch (err: any) {
       setError(err.message || "アカウントの削除に失敗しました");
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
     } finally {
       setLoading(false);
     }
@@ -42,7 +57,7 @@ export default function DeleteAccount() {
         {/* Warning Header */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i className="fa-solid fa-exclamation-triangle text-3xl text-white"></i>
+            <span className="text-4xl text-white font-bold animate-bounce-slow">！</span>
           </div>
           <h1 className="text-3xl font-bold mb-2">アカウントを削除する</h1>
           <p className="text-gray-400 text-lg">この操作は元に戻せません。内容をよくご確認のうえ、進めてください。</p>
@@ -79,10 +94,10 @@ export default function DeleteAccount() {
         </div>
 
         {/* Deletion Form */}
-        <div className="bg-darkgray rounded-lg p-6">
+        <div className={`bg-darkgray rounded-lg p-6${shake ? ' animate-shake' : ''}`}>
           <h2 className="text-xl font-bold mb-4 text-red-400">アカウント削除の確認</h2>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
+            <div className={`transition-all${error === 'confirmText' ? ' animate-shake' : ''}`}>
               <label className="block text-sm font-medium mb-2">「DELETE」と入力して確認</label>
               <input
                 type="text"
@@ -91,6 +106,9 @@ export default function DeleteAccount() {
                 placeholder="ここにDELETEと入力してください"
                 className="w-full bg-lightgray rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
+              {error === 'confirmText' && (
+                <div className="text-red-400 text-sm mt-1">「DELETE」と入力してください</div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">パスワードを入力</label>
@@ -101,6 +119,9 @@ export default function DeleteAccount() {
                 placeholder="あなたのパスワード"
                 className="w-full bg-lightgray rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
+              {error === 'Password is incorrect.' && (
+                <div className="text-red-400 text-sm mt-1">パスワードが違います</div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">退会理由（任意）</label>
@@ -130,12 +151,12 @@ export default function DeleteAccount() {
                 この操作が永久的で元に戻せないこと、すべてのデータが完全に削除されることを理解しました
               </label>
             </div>
-            {error && (
+            {error && error !== 'Password is incorrect.' && (
               <div className="text-red-400 text-sm">
                 {error === 'Unauthorized'
                   ? 'セッションが切れています。再度ログインしてください。'
-                  : error === 'Password is incorrect.'
-                    ? 'パスワードが違います'
+                  : error === 'Invalid email or password. Please check your credentials.'
+                    ? 'メールアドレスまたはパスワードが正しくありません'
                     : error}
               </div>
             )}

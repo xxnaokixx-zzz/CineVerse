@@ -93,6 +93,11 @@ export default function LoginPage() {
             errorMessage = 'Session expired. Please try logging in again.';
           }
 
+          // 日本語化
+          if (errorMessage === 'Invalid email or password. Please check your credentials.') {
+            errorMessage = 'メールアドレスまたはパスワードが正しくありません';
+          }
+
           setErrors({ ...newErrors, general: errorMessage });
           console.log('[LOGIN] error after signInWithPassword', error);
         } else if (data.session) {

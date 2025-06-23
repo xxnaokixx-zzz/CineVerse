@@ -4,11 +4,17 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient()
+    // デバッグ: リクエストヘッダーのCookieを出力
+    console.log('Request Cookie:', request.headers.get('cookie'));
+
+    const supabase = await createClient()
     const { password } = await request.json()
 
     // 1. 現在のユーザー取得
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // デバッグ: getUserの結果を出力
+    console.log('getUser error:', authError, 'user:', user);
+
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -18,6 +24,7 @@ export async function POST(request: Request) {
       email: user.email!,
       password,
     })
+    console.log('signInWithPassword error:', signInError);
     if (signInError) {
       return NextResponse.json({ error: 'Password is incorrect.' }, { status: 401 })
     }
