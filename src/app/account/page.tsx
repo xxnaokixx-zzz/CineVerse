@@ -1,9 +1,11 @@
+export const dynamic = 'force-dynamic'; // SSR 強制
+
 import { createClient } from '@/lib/supabase/server';
 import AccountClient from './AccountClient';
 import { redirect } from 'next/navigation';
 
 export default async function AccountPage() {
-  const supabase = createClient();
+  const supabase = await createClient(); // ← await を忘れずに！
 
   const { data: { user }, error } = await supabase.auth.getUser();
 
@@ -11,10 +13,8 @@ export default async function AccountPage() {
     redirect('/login');
   }
 
-  // --- Supabase集計 ---
   const userId = user.id;
 
-  // 並列で全てのクエリを実行
   const [
     watchlistResult,
     watchedResult,
@@ -23,41 +23,35 @@ export default async function AccountPage() {
     favoritesResult,
     profileResult
   ] = await Promise.all([
-    // Watchlist Items (Total)
     supabase
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId),
 
-    // Watched Items
     supabase
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('status', 'Watched'),
 
-    // To Watch Items
     supabase
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('status', 'To Watch'),
 
-    // Watching Items
     supabase
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('status', 'Watching'),
 
-    // Favorites Count
     supabase
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('favorite', true),
 
-    // Get avatar URL
     supabase
       .from('profiles')
       .select('avatar_url')
@@ -82,4 +76,4 @@ export default async function AccountPage() {
       }}
     />
   );
-} 
+}

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaFilm, FaGoogle, FaEnvelope, FaEye, FaEyeSlash, FaExclamationCircle, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +16,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [socialLoginMessage, setSocialLoginMessage] = useState('');
+  const [sessionExpiredMessage, setSessionExpiredMessage] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // Check if user was redirected due to session expiry
+    if (searchParams.get('session_expired') === 'true') {
+      setSessionExpiredMessage('Your session has expired. Please log in again.');
+      setTimeout(() => {
+        setSessionExpiredMessage('');
+      }, 8000);
+    }
+  }, [searchParams]);
 
   // URLからリダイレクト先を取得
   const getRedirectTo = () => {
@@ -56,28 +68,54 @@ export default function LoginPage() {
     if (isValid) {
       setLoading(true);
       const supabase = createClient();
-      console.log('[LOGIN] signInWithPassword start', { email });
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      console.log('[LOGIN] signInWithPassword result', { data, error });
 
-      if (error) {
+      try {
+        console.log('[LOGIN] signInWithPassword start', { email });
+
+        // Clear any existing session first
+        await supabase.auth.signOut();
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        console.log('[LOGIN] signInWithPassword result', { data, error });
+
+        if (error) {
+          setLoading(false);
+          let errorMessage = error.message;
+
+          // Handle specific error messages
+          if (error.message === 'Invalid login credentials') {
+            errorMessage = 'Invalid email or password. Please check your credentials.';
+          } else if (error.message.includes('refresh_token_not_found')) {
+            errorMessage = 'Session expired. Please try logging in again.';
+          }
+
+          setErrors({ ...newErrors, general: errorMessage });
+          console.log('[LOGIN] error after signInWithPassword', error);
+        } else if (data.session) {
+          setLoading(false);
+          setSuccess(true);
+          const redirectTo = getRedirectTo();
+          console.log('[LOGIN] redirecting to', redirectTo);
+
+          // Small delay to ensure session is properly set
+          setTimeout(() => {
+            router.push(redirectTo);
+          }, 500);
+
+          console.log('[LOGIN] pushed!');
+        } else {
+          setLoading(false);
+          setErrors({ ...newErrors, general: 'Failed to establish session. Please try again.' });
+          console.log('[LOGIN] session missing after signInWithPassword');
+        }
+      } catch (error) {
         setLoading(false);
-        setErrors({ ...newErrors, general: error.message });
-        console.log('[LOGIN] error after signInWithPassword', error);
-      } else if (data.session) {
-        setLoading(false);
-        setSuccess(true);
-        const redirectTo = getRedirectTo();
-        console.log('[LOGIN] redirecting to', redirectTo);
-        router.push(redirectTo);
-        console.log('[LOGIN] pushed!');
-      } else {
-        setLoading(false);
-        setErrors({ ...newErrors, general: 'Failed to establish session. Please try again.' });
-        console.log('[LOGIN] session missing after signInWithPassword');
+        console.error('[LOGIN] Unexpected error:', error);
+        setErrors({ ...newErrors, general: 'An unexpected error occurred. Please try again.' });
       }
     }
   };
@@ -91,6 +129,13 @@ export default function LoginPage() {
               <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
               <p className="text-gray-400">Sign in to continue your movie journey</p>
             </div>
+
+            {sessionExpiredMessage && (
+              <div className="bg-yellow-900/50 border border-yellow-600 text-yellow-200 px-4 py-3 rounded-lg flex items-center mb-6">
+                <FaExclamationTriangle className="mr-2" />
+                <span>{sessionExpiredMessage}</span>
+              </div>
+            )}
 
             <div className="space-y-3 mb-6">
               <button
@@ -228,4 +273,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-} 
+}

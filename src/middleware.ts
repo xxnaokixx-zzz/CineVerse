@@ -9,7 +9,10 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/signup') ||
     pathname.startsWith('/signup-success') ||
-    pathname.startsWith('/auth/callback')
+    pathname.startsWith('/auth/callback') ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_next/') ||
+    pathname.includes('.')
   ) {
     return NextResponse.next()
   }
@@ -55,7 +58,39 @@ export async function middleware(request: NextRequest) {
   try {
     const { data: { session }, error } = await supabase.auth.getSession()
 
-    if (error) throw error
+    // Handle specific refresh token errors
+    if (error && error.message.includes('refresh_token_not_found')) {
+      console.log('Refresh token not found, clearing cookies and redirecting to login')
+
+      // Clear all auth-related cookies
+      const cookiesToClear = [
+        'sb-access-token',
+        'sb-refresh-token',
+        `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+      ]
+
+      cookiesToClear.forEach(cookieName => {
+        response.cookies.set({
+          name: cookieName,
+          value: '',
+          maxAge: 0,
+          path: '/',
+          sameSite: 'lax',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production'
+        })
+      })
+
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirectTo', pathname)
+      redirectUrl.searchParams.set('session_expired', 'true')
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    if (error) {
+      console.error('Auth error:', error)
+      throw error
+    }
 
     if (!session && pathname !== '/login') {
       const redirectUrl = new URL('/login', request.url)
@@ -66,7 +101,30 @@ export async function middleware(request: NextRequest) {
     return response
   } catch (error) {
     console.error('Middleware error:', error)
-    return NextResponse.redirect(new URL('/login', request.url))
+
+    // Clear cookies on any auth error
+    const response = NextResponse.redirect(new URL('/login', request.url))
+
+    // Clear all potential auth cookies
+    const cookiesToClear = [
+      'sb-access-token',
+      'sb-refresh-token',
+      `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+    ]
+
+    cookiesToClear.forEach(cookieName => {
+      response.cookies.set({
+        name: cookieName,
+        value: '',
+        maxAge: 0,
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production'
+      })
+    })
+
+    return response
   }
 }
 
@@ -77,8 +135,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - api routes
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
-} 
+}

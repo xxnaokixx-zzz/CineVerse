@@ -48,9 +48,16 @@ export default function Header() {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+    try {
+      await supabase.auth.signOut();
+      // Clear any cached data
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force redirect even if logout fails
+      router.push('/login');
+    }
+  };
 
   const handleDeleteAccount = async () => {
     if (window.confirm('本当にアカウントを削除しますか？この操作は取り消せません。')) {
