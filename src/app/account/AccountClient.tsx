@@ -153,11 +153,11 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
   return (
     <main className="bg-dark text-white font-sans min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-secondary py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
+      <section className="bg-gradient-to-r from-primary to-secondary py-12 iphonepro:py-6">
+        <div className="container mx-auto px-4 iphonepro:px-2 iphonepro:max-w-[430px]">
+          <div className="flex flex-col md:flex-row items-center iphonepro:gap-2">
             <div className="relative group">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white mb-4 md:mb-0 md:mr-6">
+              <div className="w-24 h-24 md:w-32 md:h-32 iphonepro:w-20 iphonepro:h-20 rounded-full overflow-hidden border-4 border-white mb-4 md:mb-0 md:mr-6">
                 <Image
                   src={currentAvatarUrl || '/default-avatar.svg'}
                   alt="User Avatar"
@@ -180,9 +180,9 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
               </label>
             </div>
             <div className="text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{fullName}</h1>
-              <p className="text-lg opacity-90 mb-2">{email}</p>
-              <p className="opacity-80">Member since {joined}</p>
+              <h1 className="text-3xl md:text-4xl iphonepro:text-2xl font-bold mb-2">{fullName}</h1>
+              <p className="text-lg iphonepro:text-base opacity-90 mb-2">{email}</p>
+              <p className="opacity-80 iphonepro:text-sm">Member since {joined}</p>
             </div>
           </div>
           {error && (
@@ -194,13 +194,13 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
       </section>
 
       {/* Account Navigation */}
-      <section className="bg-darkgray py-4 sticky top-[73px] z-40">
-        <div className="container mx-auto px-4">
-          <div className="flex space-x-6 overflow-x-auto">
-            <button className="tab-btn active whitespace-nowrap py-2 px-4 font-medium border-b-2 border-primary text-white" data-tab="profile">Profile</button>
+      <section className="bg-darkgray py-4 sticky top-[73px] z-40 iphonepro:py-2">
+        <div className="container mx-auto px-4 iphonepro:px-2 iphonepro:max-w-[430px]">
+          <div className="flex space-x-6 iphonepro:space-x-3 overflow-x-auto">
+            <button className="tab-btn active whitespace-nowrap py-2 px-4 iphonepro:px-2 iphonepro:py-1 font-medium border-b-2 border-primary text-white" data-tab="profile">Profile</button>
             <Link
               href="/watchlist"
-              className="tab-btn whitespace-nowrap py-2 px-4 font-medium border-b-2 border-transparent text-gray-400 hover:text-white"
+              className="tab-btn whitespace-nowrap py-2 px-4 iphonepro:px-2 iphonepro:py-1 font-medium border-b-2 border-transparent text-gray-400 hover:text-white"
               data-tab="watchlist"
             >
               Watchlist

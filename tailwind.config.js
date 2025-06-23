@@ -18,6 +18,11 @@ module.exports = {
         sans: ["Inter", "sans-serif"],
       },
     },
+    screens: {
+      'iphonepro': '430px', // iPhone 16 Pro/Pro Max 幅
+      'iphonemax': '932px', // iPhone 16 Pro Max 高さ（縦向き用）
+      // 既存のsm, md, ...はデフォルトで有効
+    },
   },
   plugins: [],
 }; 

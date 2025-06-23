@@ -114,7 +114,7 @@ export default function Header() {
 
   return (
     <header className="bg-darkgray sticky top-0 z-50 shadow-lg">
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-3 iphonepro:px-2 iphonepro:max-w-[430px]">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center cursor-pointer">
             <FaFilm className="text-primary text-2xl mr-2" />
