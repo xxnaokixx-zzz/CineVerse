@@ -43,6 +43,9 @@ export default function TVShowDetailPage({ params }: PageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
+  const [vodProviders, setVodProviders] = useState<any[]>([]);
+  const [vodModalOpen, setVodModalOpen] = useState(false);
+  const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
   useEffect(() => {
     async function fetchData() {
@@ -64,6 +67,22 @@ export default function TVShowDetailPage({ params }: PageProps) {
         setCredits(creditsData);
         setSimilarShows(similarShowsData);
         setVideos(videosData);
+
+        // VOD配信情報取得
+        if (tvShowData && tvShowData.id) {
+          try {
+            const res = await fetch(`https://api.themoviedb.org/3/tv/${tvShowData.id}/watch/providers?api_key=${TMDB_API_KEY}`);
+            const data = await res.json();
+            const jp = data.results?.JP;
+            if (jp && jp.flatrate) {
+              setVodProviders(jp.flatrate);
+            } else {
+              setVodProviders([]);
+            }
+          } catch (e) {
+            setVodProviders([]);
+          }
+        }
       } catch (error) {
         console.error("Failed to fetch TV show details:", error);
         notFound();
@@ -176,18 +195,24 @@ export default function TVShowDetailPage({ params }: PageProps) {
                   {trailer && (
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="bg-primary hover:bg-secondary transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm"
+                      className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
                     >
                       <FaPlay className="mr-2" /> Watch Trailer
                     </button>
                   )}
                   <button
-                    className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm ${added ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100${added || adding ? ' opacity-60 cursor-not-allowed' : ''}`}
                     onClick={handleAddToWatchlist}
                     disabled={added || adding}
                   >
                     <FaBookmark className="mr-2" />
                     {added ? 'Added' : adding ? 'Adding...' : 'Add to Watchlist'}
+                  </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    onClick={() => setVodModalOpen(true)}
+                  >
+                    <FaTv className="mr-2" /> VOD
                   </button>
                 </div>
               </div>
@@ -284,6 +309,36 @@ export default function TVShowDetailPage({ params }: PageProps) {
           videoKey={trailer.key}
           onClose={() => setIsModalOpen(false)}
         />
+      )}
+
+      {/* VODモーダル */}
+      {vodModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px] max-w-[90vw] relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
+              onClick={() => setVodModalOpen(false)}
+              aria-label="閉じる"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4 text-gray-900">配信中のVOD</h2>
+            {vodProviders.length > 0 ? (
+              <div className="flex flex-wrap gap-3">
+                {Array.from(new Map(vodProviders.map(p => [p.provider_id, p])).values()).map((provider) => (
+                  <div key={provider.provider_id} className="flex items-center gap-2 bg-lightgray rounded px-2 py-1">
+                    {provider.logo_path && (
+                      <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-6 h-6 object-contain" />
+                    )}
+                    <span className="text-xs text-gray-900 font-medium">{provider.provider_name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">VOD配信情報はありません。</p>
+            )}
+          </div>
+        </div>
       )}
     </>
   );

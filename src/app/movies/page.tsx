@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getAllMovies, getMoviesByGenre, getGenres, Movie, Genre, getImageUrl } from '@/services/movieService';
 import { FaStar, FaPlay, FaPlus, FaInfo, FaChevronDown, FaThLarge, FaList, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import MovieCard from '@/components/MovieCard';
 
 export default function AllMoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -190,43 +191,15 @@ export default function AllMoviesPage() {
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
               {movies.map((movie) => (
-                <div key={movie.id} className="group relative rounded-lg overflow-hidden bg-darkgray transition-transform hover:scale-105">
-                  <Image
-                    src={getImageUrl(movie.poster_path)}
-                    alt={`${movie.title} movie poster`}
-                    width={500}
-                    height={750}
-                    className="w-full aspect-[2/3] object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center">
-                        <FaStar className="text-yellow-400 mr-1 text-sm" />
-                        <span className="text-sm">{movie.vote_average.toFixed(1)}/10</span>
-                      </div>
-                      <span className="text-xs bg-gray-800 px-1.5 py-0.5 rounded">
-                        {movie.release_date.substring(0, 4)}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-white truncate">{movie.title}</h3>
-                    <div className="flex mt-2 space-x-2">
-                      <Link href={`/movie/${movie.id}`}>
-                        <button className="bg-primary hover:bg-secondary p-1.5 rounded-full transition-colors">
-                          <FaPlay className="text-xs" />
-                        </button>
-                      </Link>
-                      <button className="bg-darkgray hover:bg-lightgray p-1.5 rounded-full transition-colors">
-                        <FaPlus className="text-xs" />
-                      </button>
-                      <Link href={`/movie/${movie.id}`}>
-                        <button className="bg-darkgray hover:bg-lightgray p-1.5 rounded-full transition-colors">
-                          <FaInfo className="text-xs" />
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  imageUrl={getImageUrl(movie.poster_path)}
+                  title={movie.title}
+                  rating={movie.vote_average.toFixed(1)}
+                  year={movie.release_date.substring(0, 4)}
+                  mediaType="movie"
+                />
               ))}
             </div>
           ) : (
