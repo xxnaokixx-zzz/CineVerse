@@ -187,13 +187,14 @@ export default function Header() {
                     <FaSignOutAlt className="mr-2" />
                     ログアウト
                   </button>
-                  <button
-                    onClick={handleDeleteAccount}
+                  <Link
+                    href="/account/delete"
                     className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-700 cursor-pointer"
+                    onClick={() => setDropdownOpen(false)}
                   >
                     <FaTrash className="mr-2" />
                     退会
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
