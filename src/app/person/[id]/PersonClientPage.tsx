@@ -17,6 +17,7 @@ interface PersonClientPageProps {
 export default function PersonClientPage({ person, credits, externalIds, knownFor }: PersonClientPageProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [filmographyFilter, setFilmographyFilter] = useState<'all' | 'movie' | 'tv'>('all');
+  const [showAll, setShowAll] = useState(false);
 
   const filteredFilmography = (credits?.cast || [])
     .filter(credit => filmographyFilter === 'all' || credit.media_type === filmographyFilter)
@@ -82,7 +83,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                 </div>
               </div>
               <div className="space-y-4">
-                {filteredFilmography.slice(0, 10).map((credit) => (
+                {(showAll ? filteredFilmography : filteredFilmography.slice(0, 10)).map((credit) => (
                   <Link key={`${credit.id}-${credit.character}`} href={`/${credit.media_type}/${credit.id}`}>
                     <div className="flex items-center gap-4 p-4 bg-darkgray rounded-lg hover:bg-lightgray transition-colors cursor-pointer">
                       <div className="w-16 h-20 rounded overflow-hidden flex-shrink-0 bg-lightgray flex items-center justify-center">
@@ -107,8 +108,11 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   </Link>
                 ))}
               </div>
-              {filteredFilmography.length > 10 && (
-                <button className="w-full py-3 bg-lightgray hover:bg-gray-700 transition-colors rounded-lg mt-4 text-center">
+              {filteredFilmography.length > 10 && !showAll && (
+                <button
+                  className="w-full py-3 bg-lightgray hover:bg-gray-700 transition-colors rounded-lg mt-4 text-center"
+                  onClick={() => setShowAll(true)}
+                >
                   全作品を表示
                 </button>
               )}
