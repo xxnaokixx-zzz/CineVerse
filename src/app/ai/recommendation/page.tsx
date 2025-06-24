@@ -23,20 +23,12 @@ export default function AIRecommendationPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const handleMoodSubmit = async (e: React.FormEvent) => {
+  const handleMoodSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (moodInput.trim()) {
-      setIsLoading(true)
       setError(null)
-      try {
-        const result = await getMovieRecommendations({ mood: moodInput.trim() })
-        setRecommendations(result)
-      } catch (err) {
-        setError('AIからの推薦を取得できませんでした。しばらく時間をおいて再度お試しください。')
-        console.error('Error getting recommendations:', err)
-      } finally {
-        setIsLoading(false)
-      }
+      // moodをクエリパラメータで渡して結果ページに遷移
+      router.push(`/ai/recommendation/result?mood=${encodeURIComponent(moodInput.trim())}`)
     }
   }
 
@@ -73,7 +65,6 @@ export default function AIRecommendationPage() {
                 placeholder="今の気分を自由に書いてください..."
                 className="w-full p-4 bg-lightgray border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
                 rows={4}
-                disabled={isLoading}
               />
               {error && (
                 <div className="bg-red-900/20 border border-red-500 text-red-400 p-3 rounded-lg text-sm">
@@ -82,17 +73,10 @@ export default function AIRecommendationPage() {
               )}
               <button
                 type="submit"
-                disabled={!moodInput.trim() || isLoading}
+                disabled={!moodInput.trim()}
                 className="w-full bg-primary hover:bg-primary/80 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
               >
-                {isLoading ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    <span>AIが考え中...</span>
-                  </>
-                ) : (
-                  <span>AIにおすすめを聞く</span>
-                )}
+                <span>AIにおすすめを聞く</span>
               </button>
             </form>
           </div>
