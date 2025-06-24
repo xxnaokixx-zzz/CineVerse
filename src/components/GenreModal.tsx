@@ -10,9 +10,9 @@ interface GenreModalProps {
 }
 
 const genres = [
-  { name: 'Movie', href: '/movies', icon: MdMovie, description: '映画' },
-  { name: 'Anime', href: '/anime', icon: MdAnimation, description: 'アニメ' },
-  { name: 'Drama', href: '/drama', icon: MdTv, description: 'ドラマ' },
+  { name: 'Movie', href: '/movies', icon: MdMovie, description: '映画の一覧が閲覧できます' },
+  { name: 'Anime', href: '/anime', icon: MdAnimation, description: 'アニメの一覧が閲覧できます' },
+  { name: 'Drama', href: '/drama', icon: MdTv, description: 'ドラマの一覧が閲覧できます' },
 ]
 
 export default function GenreModal({ isOpen, onClose }: GenreModalProps) {

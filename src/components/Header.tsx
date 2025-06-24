@@ -1,12 +1,13 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FaFilm, FaChevronDown, FaBars, FaSearch, FaSignOutAlt, FaUserCircle, FaTrash } from 'react-icons/fa'
+import { FaFilm, FaChevronDown, FaBars, FaSearch, FaSignOutAlt, FaUserCircle, FaTrash, FaRobot } from 'react-icons/fa'
 import { FaRegUser } from 'react-icons/fa6'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import GenreModal from './GenreModal'
+import AIFeaturesModal from './AIFeaturesModal'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -15,6 +16,7 @@ export default function Header() {
   const [mobileSearchQuery, setMobileSearchQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [genreModalOpen, setGenreModalOpen] = useState(false)
+  const [aiFeaturesModalOpen, setAiFeaturesModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const router = useRouter()
@@ -83,6 +85,7 @@ export default function Header() {
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
   const toggleGenreModal = () => setGenreModalOpen(!genreModalOpen)
+  const toggleAIFeaturesModal = () => setAiFeaturesModalOpen(!aiFeaturesModalOpen)
 
   const handleLogout = async () => {
     try {
@@ -175,11 +178,18 @@ export default function Header() {
             {/* ジャンルボタン */}
             <button
               onClick={toggleGenreModal}
-              className={`font-medium hover:text-primary transition-colors flex items-center space-x-1 ${isGenrePage(pathname) ? 'text-primary' : ''
+              className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname) ? 'text-primary' : ''
                 }`}
             >
               <span>Genre</span>
-              <FaChevronDown className="text-sm" />
+            </button>
+
+            {/* AI機能ボタン */}
+            <button
+              onClick={toggleAIFeaturesModal}
+              className="font-medium hover:text-primary transition-colors"
+            >
+              <span>AI機能</span>
             </button>
           </nav>
 
@@ -304,6 +314,14 @@ export default function Header() {
                 Genre
               </button>
 
+              {/* モバイル用AI機能ボタン */}
+              <button
+                onClick={toggleAIFeaturesModal}
+                className="font-medium hover:text-primary transition-colors text-left flex items-center space-x-2"
+              >
+                <span>AI機能</span>
+              </button>
+
               {!user && (
                 <div className="flex flex-col space-y-3 pt-3 border-t border-gray-700">
                   <Link href="/login" className="font-medium hover:text-primary transition-colors">
@@ -321,6 +339,9 @@ export default function Header() {
 
       {/* ジャンル選択モーダル */}
       <GenreModal isOpen={genreModalOpen} onClose={() => setGenreModalOpen(false)} />
+
+      {/* AI機能モーダル */}
+      <AIFeaturesModal isOpen={aiFeaturesModalOpen} onClose={() => setAiFeaturesModalOpen(false)} />
     </header>
   )
 } 
