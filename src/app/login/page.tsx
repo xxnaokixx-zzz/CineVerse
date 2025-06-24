@@ -28,7 +28,22 @@ export default function LoginPage() {
         setSessionExpiredMessage('');
       }, 8000);
     }
-  }, [searchParams]);
+
+    // onAuthStateChangeでログイン後にリダイレクト
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        const redirectTo = getRedirectTo();
+        router.push(redirectTo);
+      }
+      if (event === 'SIGNED_OUT') {
+        router.push('/login');
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [searchParams, router]);
 
   // URLからリダイレクト先を取得
   const getRedirectTo = () => {
@@ -103,15 +118,7 @@ export default function LoginPage() {
         } else if (data.session) {
           setLoading(false);
           setSuccess(true);
-          const redirectTo = getRedirectTo();
-          console.log('[LOGIN] redirecting to', redirectTo);
-
-          // Small delay to ensure session is properly set
-          setTimeout(() => {
-            router.push(redirectTo);
-          }, 500);
-
-          console.log('[LOGIN] pushed!');
+          // 遷移はonAuthStateChangeで行う
         } else {
           setLoading(false);
           setErrors({ ...newErrors, general: 'Failed to establish session. Please try again.' });

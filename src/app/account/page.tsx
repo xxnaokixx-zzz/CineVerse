@@ -63,6 +63,10 @@ export default async function AccountPage() {
     ? supabase.storage.from('avatars').getPublicUrl(profileResult.data.avatar_url).data.publicUrl
     : null;
 
+  // デバッグ用ログ
+  console.log('profileResult:', profileResult.data);
+  console.log('avatarUrl:', avatarUrl);
+
   return (
     <AccountClient
       user={user}

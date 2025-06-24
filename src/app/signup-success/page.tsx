@@ -1,16 +1,32 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { FaFilm, FaCheck, FaEnvelope, FaInfoCircle, FaPaperPlane, FaArrowRight, FaSearch, FaHeart, FaStar } from "react-icons/fa";
+import { createClient } from '@/lib/supabase/client';
 
 export default function SignupSuccessPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const name = searchParams.get("name") || "";
   const email = searchParams.get("email") || "";
+  const avatarPath = searchParams.get("avatar") || "";
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [resending, setResending] = useState(false);
-  const [continueLoading, setContinueLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAvatarUrl = async () => {
+      if (avatarPath) {
+        const supabase = createClient();
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(avatarPath);
+        setAvatarUrl(publicUrl);
+      }
+    };
+    fetchAvatarUrl();
+  }, [avatarPath]);
 
   const handleResend = async () => {
     setResending(true);
@@ -21,25 +37,6 @@ export default function SignupSuccessPage() {
   };
 
   const handleCloseModal = () => setModalOpen(false);
-
-  const handleContinue = () => {
-    setContinueLoading(true);
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 1500);
-  };
-
-  // 30秒後に自動リダイレクト
-  // setTimeoutはuseEffectで
-  useState(() => {
-    const timer = setTimeout(() => {
-      setContinueLoading(true);
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 3000);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="bg-dark text-white font-sans min-h-screen">
@@ -54,12 +51,24 @@ export default function SignupSuccessPage() {
           </div>
           {/* Success Message */}
           <div className="bg-darkgray rounded-2xl shadow-2xl p-8">
-            <h1 className="text-3xl font-bold mb-4 text-green-400">Welcome to CineVerse!</h1>
-            <p className="text-xl text-gray-300 mb-6">Your account has been created successfully</p>
+            <h1 className="text-3xl font-bold mb-4 text-green-400">CineVerseへようこそ！</h1>
+            <p className="text-xl text-gray-300 mb-6">アカウントの作成が完了しました</p>
             {/* User Info Display */}
             <div className="bg-lightgray rounded-lg p-4 mb-6">
               <div className="flex items-center justify-center mb-3">
-                <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="User Avatar" className="w-16 h-16 rounded-full mr-4" />
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt="User Avatar"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16 rounded-full mr-4 object-cover"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center mr-4">
+                    <span className="text-2xl font-bold">{name.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
                 <div className="text-left">
                   <h3 className="text-lg font-semibold">{name}</h3>
                   <p className="text-gray-400">{email}</p>
@@ -71,14 +80,14 @@ export default function SignupSuccessPage() {
               <div className="flex items-start">
                 <FaEnvelope className="text-yellow-400 text-xl mr-3 mt-1" />
                 <div className="text-left">
-                  <h4 className="font-semibold text-yellow-200 mb-2">Verify Your Email</h4>
+                  <h4 className="font-semibold text-yellow-200 mb-2">メールアドレスの確認</h4>
                   <p className="text-yellow-100 text-sm mb-3">
-                    We've sent a verification email to <strong>{email}</strong>.<br />
-                    Please check your inbox and click the verification link to activate your account.
+                    <strong>{email}</strong> 宛に確認メールを送信しました。<br />
+                    メール内の確認リンクをクリックしてアカウントを有効化してください。
                   </p>
                   <p className="text-yellow-200 text-xs">
                     <FaInfoCircle className="inline mr-1" />
-                    Don't see the email? Check your spam folder or wait a few minutes.
+                    メールが届かない場合は、迷惑メールフォルダをご確認いただくか、しばらくお待ちください。
                   </p>
                 </div>
               </div>
@@ -92,54 +101,38 @@ export default function SignupSuccessPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
-                    Sending...
+                    送信中...
                   </>
                 ) : (
                   <>
                     <FaPaperPlane className="mr-2" />
-                    Resend Verification Email
-                  </>
-                )}
-              </button>
-              <button onClick={handleContinue} disabled={continueLoading} className="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
-                {continueLoading ? (
-                  <>
-                    <span>Redirecting to Dashboard...</span>
-                    <svg className="animate-spin ml-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-                    </svg>
-                  </>
-                ) : (
-                  <>
-                    <span>Continue to Dashboard</span>
-                    <FaArrowRight className="ml-2" />
+                    確認メールを再送信
                   </>
                 )}
               </button>
             </div>
             {/* Additional Info */}
             <div className="mt-8 pt-6 border-t border-gray-600">
-              <h4 className="font-semibold mb-4">What's Next?</h4>
+              <h4 className="font-semibold mb-4">次のステップ</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="text-center">
                   <FaSearch className="text-primary text-2xl mb-2 mx-auto" />
-                  <p className="text-gray-300">Discover thousands of movies and shows</p>
+                  <p className="text-gray-300">数千の映画やドラマを発見</p>
                 </div>
                 <div className="text-center">
                   <FaHeart className="text-primary text-2xl mb-2 mx-auto" />
-                  <p className="text-gray-300">Save your favorites and create watchlists</p>
+                  <p className="text-gray-300">お気に入りとウォッチリストを作成</p>
                 </div>
                 <div className="text-center">
                   <FaStar className="text-primary text-2xl mb-2 mx-auto" />
-                  <p className="text-gray-300">Rate and review movies you've watched</p>
+                  <p className="text-gray-300">視聴した作品の評価とレビュー</p>
                 </div>
               </div>
             </div>
             {/* Support Link */}
             <div className="mt-6 pt-4 border-t border-gray-600">
               <p className="text-gray-400 text-sm">
-                Need help? <button className="text-primary hover:text-secondary transition-colors">Contact Support</button>
+                お困りですか？ <button className="text-primary hover:text-secondary transition-colors">サポートに連絡</button>
               </p>
             </div>
           </div>
@@ -151,12 +144,12 @@ export default function SignupSuccessPage() {
           <div className="bg-darkgray rounded-2xl p-6 max-w-sm w-full mx-4">
             <div className="text-center">
               <FaPaperPlane className="text-primary text-3xl mb-4 mx-auto" />
-              <h3 className="text-lg font-semibold mb-2">Email Sent!</h3>
+              <h3 className="text-lg font-semibold mb-2">メールを送信しました！</h3>
               <p className="text-gray-300 text-sm mb-4">
-                We've sent another verification email to your inbox. Please check your email and spam folder.
+                確認メールを再送信しました。受信トレイと迷惑メールフォルダをご確認ください。
               </p>
               <button onClick={handleCloseModal} className="bg-primary hover:bg-secondary text-white py-2 px-4 rounded-lg font-medium transition-colors">
-                Got it
+                閉じる
               </button>
             </div>
           </div>

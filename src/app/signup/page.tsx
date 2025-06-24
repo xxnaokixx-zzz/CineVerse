@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { FaFilm, FaGoogle, FaFacebook, FaEnvelope, FaEye, FaEyeSlash, FaExclamationCircle, FaExclamationTriangle, FaCheckCircle } from "react-icons/fa";
+import Image from "next/image";
+import { FaFilm, FaGoogle, FaFacebook, FaEnvelope, FaEye, FaEyeSlash, FaExclamationCircle, FaExclamationTriangle, FaCheckCircle, FaCamera } from "react-icons/fa";
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -14,12 +15,16 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    avatar: "",
     general: "",
   });
   const [success, setSuccess] = useState(false);
@@ -43,6 +48,51 @@ export default function SignupPage() {
     checkPasswordStrength(e.target.value);
   };
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        setErrors(prev => ({ ...prev, avatar: "画像サイズは5MB以下にしてください" }));
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, avatar: "画像ファイルを選択してください" }));
+        return;
+      }
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setErrors(prev => ({ ...prev, avatar: "" }));
+    }
+  };
+
+  const getDefaultAvatar = () => {
+    if (firstName) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#6366f1'; // Indigo color (primary)
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 100px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(firstName.charAt(0).toUpperCase(), canvas.width / 2, canvas.height / 2);
+        return canvas.toDataURL('image/png');
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({
@@ -51,6 +101,7 @@ export default function SignupPage() {
       email: "",
       password: "",
       confirmPassword: "",
+      avatar: "",
       general: "",
     });
     setSuccess(false);
@@ -61,19 +112,20 @@ export default function SignupPage() {
       email: "",
       password: "",
       confirmPassword: "",
+      avatar: "",
       general: "",
     };
     if (!firstName.trim()) {
-      newErrors.firstName = "First name is required";
+      newErrors.firstName = "姓を入力してください";
       isValid = false;
     }
     if (!lastName.trim()) {
-      newErrors.lastName = "Last name is required";
+      newErrors.lastName = "名を入力してください";
       isValid = false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = "有効なメールアドレスを入力してください";
       isValid = false;
     }
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
@@ -82,7 +134,7 @@ export default function SignupPage() {
       isValid = false;
     }
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "パスワードが一致しません";
       isValid = false;
     }
     if (!isValid) {
@@ -91,26 +143,77 @@ export default function SignupPage() {
     }
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
+
+    try {
+      // アバター画像のアップロード処理
+      let avatarUrl = null;
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const { error: uploadError, data } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile);
+
+        if (uploadError) throw uploadError;
+        avatarUrl = fileName;
+      } else if (firstName) {
+        // デフォルトアバターの作成と保存
+        const defaultAvatarDataUrl = getDefaultAvatar();
+        if (defaultAvatarDataUrl) {
+          const response = await fetch(defaultAvatarDataUrl);
+          const blob = await response.blob();
+          const fileName = `${Date.now()}.png`;
+          const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, blob);
+
+          if (uploadError) throw uploadError;
+          avatarUrl = fileName;
+        }
+      }
+
+      // ユーザー登録
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`.trim(),
+            avatar_url: avatarUrl,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      // プロフィールも必ずupsert
+      if (signUpData.user) {
+        const { error: upsertError } = await supabase.from('profiles').upsert({
+          id: signUpData.user.id,
           first_name: firstName,
           last_name: lastName,
           full_name: `${firstName} ${lastName}`.trim(),
-        },
-      },
-    });
-    setLoading(false);
-    if (error) {
+          avatar_url: avatarUrl,
+          email: email,
+        });
+        if (upsertError) {
+          console.error('profiles upsert error:', upsertError);
+        } else {
+          console.log('profiles upsert success');
+        }
+      }
+
+      setSuccess(true);
+      const name = encodeURIComponent(`${firstName} ${lastName}`.trim());
+      const mail = encodeURIComponent(email);
+      const avatar = encodeURIComponent(avatarUrl || '');
+      router.push(`/signup-success?name=${name}&email=${mail}&avatar=${avatar}`);
+    } catch (error: any) {
       setErrors({ ...newErrors, general: error.message });
-      return;
+      setLoading(false);
     }
-    setSuccess(true);
-    const name = encodeURIComponent(`${firstName} ${lastName}`.trim());
-    const mail = encodeURIComponent(email);
-    router.push(`/signup-success?name=${name}&email=${mail}`);
   };
 
   return (
@@ -120,18 +223,59 @@ export default function SignupPage() {
         <div className="max-w-md w-full">
           <div className="bg-darkgray rounded-2xl shadow-2xl p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Join CineVerse</h1>
-              <p className="text-gray-400">Create your account to start your movie journey</p>
+              <h1 className="text-3xl font-bold mb-2">CineVerseへようこそ</h1>
+              <p className="text-gray-400">アカウントを作成して映画の旅を始めましょう</p>
+            </div>
+            {/* Avatar Upload */}
+            <div className="mb-8 flex flex-col items-center">
+              <div
+                className="w-24 h-24 rounded-full overflow-hidden bg-primary relative cursor-pointer group"
+                onClick={handleAvatarClick}
+              >
+                {avatarPreview ? (
+                  <Image
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover"
+                  />
+                ) : firstName ? (
+                  <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-white">
+                    {firstName.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <FaCamera className="text-2xl text-white" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <FaCamera className="text-2xl text-white" />
+                </div>
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <p className="text-sm text-gray-400 mt-2">プロフィール画像を選択（任意）</p>
+              {errors.avatar && (
+                <div className="text-red-400 text-sm mt-1 flex items-center">
+                  <FaExclamationCircle className="mr-1" /> {errors.avatar}
+                </div>
+              )}
             </div>
             {/* Social Sign Up Buttons (無効化) */}
             <div className="space-y-3 mb-6">
               <button disabled className="w-full bg-white text-black py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center opacity-60 cursor-not-allowed">
                 <FaGoogle className="mr-3 text-lg" />
-                Continue with Google
+                Googleで続ける
               </button>
               <button disabled className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center opacity-60 cursor-not-allowed">
                 <FaFacebook className="mr-3 text-lg" />
-                Continue with Facebook
+                Facebookで続ける
               </button>
             </div>
             {/* Divider */}
@@ -140,15 +284,15 @@ export default function SignupPage() {
                 <div className="w-full border-t border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-darkgray text-gray-400">Or sign up with email</span>
+                <span className="px-4 bg-darkgray text-gray-400">またはメールアドレスで登録</span>
               </div>
             </div>
             {/* Sign Up Form */}
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">First Name</label>
-                  <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="John" />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">姓</label>
+                  <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="山田" />
                   {errors.firstName && (
                     <div className="text-red-400 text-sm mt-1 flex items-center">
                       <FaExclamationCircle className="mr-1" /> {errors.firstName}
@@ -156,8 +300,8 @@ export default function SignupPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
-                  <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="Doe" />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">名</label>
+                  <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="太郎" />
                   {errors.lastName && (
                     <div className="text-red-400 text-sm mt-1 flex items-center">
                       <FaExclamationCircle className="mr-1" /> {errors.lastName}
@@ -166,9 +310,9 @@ export default function SignupPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">メールアドレス</label>
                 <div className="relative">
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="john.doe@example.com" />
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="example@email.com" />
                   <FaEnvelope className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 </div>
                 {errors.email && (
@@ -178,9 +322,9 @@ export default function SignupPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">パスワード</label>
                 <div className="relative">
-                  <input type={showPassword ? "text" : "password"} value={password} onChange={handlePasswordChange} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-12" placeholder="Create a strong password" />
+                  <input type={showPassword ? "text" : "password"} value={password} onChange={handlePasswordChange} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-12" placeholder="8文字以上の強力なパスワード" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
@@ -192,7 +336,7 @@ export default function SignupPage() {
                       <div key={i} className={`h-1 flex-1 rounded ${passwordStrength <= 2 ? (i < passwordStrength ? 'bg-red-500' : 'bg-gray-600') : passwordStrength <= 3 ? (i < passwordStrength ? 'bg-yellow-500' : 'bg-gray-600') : (i < passwordStrength ? 'bg-green-500' : 'bg-gray-600')}`}></div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Password strength: <span>{passwordStrength <= 2 ? 'Weak' : passwordStrength <= 3 ? 'Medium' : 'Strong'}</span></p>
+                  <p className="text-xs text-gray-400 mt-1">パスワードの強度: <span>{passwordStrength <= 2 ? '弱い' : passwordStrength <= 3 ? '普通' : '強い'}</span></p>
                 </div>
                 {errors.password && (
                   <div className="text-red-400 text-sm mt-1 flex items-center">
@@ -201,9 +345,9 @@ export default function SignupPage() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">パスワード（確認）</label>
                 <div className="relative">
-                  <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-12" placeholder="Confirm your password" />
+                  <input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-12" placeholder="パスワードを再入力" />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
@@ -223,28 +367,28 @@ export default function SignupPage() {
               {success && (
                 <div className="bg-green-900 border border-green-600 text-green-200 px-4 py-3 rounded-lg flex items-center">
                   <FaCheckCircle className="mr-2" />
-                  <span>Account created successfully! Please check your email to verify.</span>
+                  <span>アカウントが作成されました！メールを確認してください。</span>
                 </div>
               )}
               <button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-gray-100 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50">
                 {loading ? (
                   <>
-                    <span>Creating Account...</span>
+                    <span>アカウントを作成中...</span>
                     <svg className="animate-spin ml-2 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                     </svg>
                   </>
                 ) : (
-                  <span>Create Account</span>
+                  <span>アカウントを作成</span>
                 )}
               </button>
             </form>
             <div className="text-center mt-6 pt-6 border-t border-gray-600">
               <p className="text-gray-400">
-                Already have an account?{' '}
+                すでにアカウントをお持ちですか？{' '}
                 <Link href="/login" className="text-primary hover:text-secondary transition-colors font-medium ml-1">
-                  Sign in here
+                  ログインはこちら
                 </Link>
               </p>
             </div>

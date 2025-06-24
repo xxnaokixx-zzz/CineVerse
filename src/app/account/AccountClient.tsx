@@ -134,6 +134,7 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
 
       setCurrentAvatarUrl(publicUrl);
       router.refresh();
+      window.location.reload();
     } catch (error) {
       console.error('Error uploading avatar:', error);
       setError(error instanceof Error ? error.message : 'Failed to upload avatar');

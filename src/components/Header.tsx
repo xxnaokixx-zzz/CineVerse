@@ -36,12 +36,46 @@ export default function Header() {
             .from('avatars')
             .getPublicUrl(profile.avatar_url)
           setAvatarUrl(publicUrl)
+        } else {
+          setAvatarUrl(null)
         }
+      } else {
+        setUser(null)
+        setAvatarUrl(null)
       }
     }
 
     fetchUserData()
+
+    // onAuthStateChangeで自動反映
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchUserData()
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
+
+  // ドロップダウン外クリックで閉じる
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const dropdown = document.getElementById('account-dropdown');
+      const avatarBtn = document.getElementById('account-avatar-btn');
+      if (
+        dropdown &&
+        !dropdown.contains(event.target as Node) &&
+        avatarBtn &&
+        !avatarBtn.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
@@ -149,55 +183,67 @@ export default function Header() {
               <FaSearch className="text-xl" />
             </button>
 
-            <div className="relative">
-              <button
-                className="flex items-center space-x-2 focus:outline-none"
-                onClick={toggleDropdown}
-                type="button"
-              >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
-                  {avatarUrl ? (
-                    <Image
-                      src={avatarUrl}
-                      alt="Profile"
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <FaRegUser />
-                  )}
-                </div>
-              </button>
+            {user ? (
+              <div className="relative">
+                <button
+                  id="account-avatar-btn"
+                  className="flex items-center space-x-2 focus:outline-none"
+                  onClick={toggleDropdown}
+                  type="button"
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
+                    {avatarUrl ? (
+                      <Image
+                        src={avatarUrl}
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <FaRegUser />
+                    )}
+                  </div>
+                </button>
 
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-darkgray rounded-lg shadow-lg py-2 border border-gray-700">
-                  <Link
-                    href="/account"
-                    className="flex items-center px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <FaUserCircle className="mr-2" />
-                    プロフィール
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
-                  >
-                    <FaSignOutAlt className="mr-2" />
-                    ログアウト
-                  </button>
-                  <Link
-                    href="/account/delete"
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-700 cursor-pointer"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <FaTrash className="mr-2" />
-                    退会
-                  </Link>
-                </div>
-              )}
-            </div>
+                {dropdownOpen && (
+                  <div id="account-dropdown" className="absolute right-0 mt-2 w-48 bg-darkgray rounded-lg shadow-lg py-2 border border-gray-700">
+                    <Link
+                      href="/account"
+                      className="flex items-center px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <FaUserCircle className="mr-2" />
+                      プロフィール
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
+                    >
+                      <FaSignOutAlt className="mr-2" />
+                      ログアウト
+                    </button>
+                    <Link
+                      href="/account/delete"
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-700 cursor-pointer"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      <FaTrash className="mr-2" />
+                      退会
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center space-x-4">
+                <Link href="/login" className="font-medium hover:text-primary transition-colors">
+                  Login
+                </Link>
+                <Link href="/signup" className="bg-primary px-4 py-2 rounded-full font-medium hover:bg-primary/80 transition-colors">
+                  Sign Up
+                </Link>
+              </div>
+            )}
 
             <button onClick={toggleMobileMenu} className="md:hidden">
               <FaBars className="text-xl" />
@@ -233,6 +279,16 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
+              {!user && (
+                <div className="flex flex-col space-y-3 pt-3 border-t border-gray-700">
+                  <Link href="/login" className="font-medium hover:text-primary transition-colors">
+                    Login
+                  </Link>
+                  <Link href="/signup" className="font-medium hover:text-primary transition-colors">
+                    Sign Up
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         )}
