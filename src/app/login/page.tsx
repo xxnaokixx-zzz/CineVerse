@@ -228,7 +228,7 @@ export default function LoginPage() {
                   <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 text-primary bg-lightgray border-gray-600 rounded focus:ring-primary focus:ring-2" />
                   <span className="ml-2 text-sm text-gray-300">Remember me</span>
                 </label>
-                <button type="button" className="text-sm text-primary hover:text-secondary transition-colors">
+                <button type="button" className="text-sm text-primary hover:text-secondary transition-colors" onClick={() => router.push('/forgot-password')}>
                   Forgot password?
                 </button>
               </div>

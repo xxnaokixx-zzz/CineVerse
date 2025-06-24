@@ -40,26 +40,9 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="bg-dark text-white font-sans min-h-screen">
-      {/* Header */}
-      <header className="bg-darkgray shadow-lg">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="flex items-center cursor-pointer">
-                <FaKey className="text-primary text-2xl mr-2" />
-                <span className="text-xl font-bold">CineVerse</span>
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-300">パスワードを思い出しましたか？</span>
-              <button className="text-primary hover:text-secondary transition-colors font-medium" onClick={() => router.push('/login')}>サインイン</button>
-            </div>
-          </div>
-        </div>
-      </header>
 
       {/* Forgot Password Section */}
-      <section className="min-h-screen flex items-center justify-center py-12 px-4">
+      <section className="min-h-screen flex items-center justify-center py-4 px-4">
         <div className="max-w-md w-full">
           {/* Reset Password Card */}
           <div className="bg-darkgray rounded-2xl shadow-2xl p-8">

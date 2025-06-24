@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/login') ||
     pathname.startsWith('/signup') ||
     pathname.startsWith('/signup-success') ||
+    pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/auth/callback') ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/_next/') ||
