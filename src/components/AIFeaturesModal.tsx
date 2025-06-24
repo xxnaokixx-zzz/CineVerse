@@ -70,11 +70,11 @@ export default function AIFeaturesModal({ isOpen, onClose }: AIFeaturesModalProp
 
   const handleFeatureClick = (featureId: string) => {
     if (featureId === 'mood-recommendation') {
-      // 今の気分に合う作品を提案の場合は専用ページに遷移
-      onClose()
-      router.push('/ai/recommendation')
+      onClose();
+      setTimeout(() => {
+        router.push('/ai/recommendation');
+      }, 0);
     } else {
-      // 他の機能は開発中なので何もしない
       console.log('開発中の機能です:', featureId)
     }
   }

@@ -47,18 +47,16 @@ export default function AIRecommendationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white py-10 px-4">
+    <div className="bg-dark text-white py-2 px-2">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-center mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center space-x-2 text-primary hover:text-primary/80 transition-colors"
-          >
-            <FaArrowLeft className="text-sm" />
-            <span>戻る</span>
-          </button>
-          <h1 className="text-2xl font-bold ml-6">今の気分に合う作品を提案</h1>
-        </div>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center space-x-2 text-primary hover:text-primary/80 transition-colors mb-2"
+        >
+          <FaArrowLeft className="text-sm" />
+          <span>戻る</span>
+        </button>
+        <h1 className="text-2xl font-bold text-center w-full mb-4">今の気分に合う作品を提案</h1>
 
         {!recommendations ? (
           <div className="bg-darkgray rounded-lg p-8 shadow-lg">
@@ -99,7 +97,7 @@ export default function AIRecommendationPage() {
             </form>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             <div className="bg-lightgray p-6 rounded-lg">
               <h3 className="text-white font-semibold text-lg mb-3">推薦理由</h3>
               <p className="text-gray-300 text-sm leading-relaxed">
@@ -113,7 +111,7 @@ export default function AIRecommendationPage() {
                   <AIRecommendationCard key={idx} {...rec} />
                 ))}
               </div>
-              <div className="mt-8 text-center">
+              <div className="mt-4 text-center">
                 <button
                   onClick={handleNewRecommendation}
                   className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg transition-colors"
