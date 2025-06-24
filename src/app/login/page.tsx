@@ -23,7 +23,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Check if user was redirected due to session expiry
     if (searchParams.get('session_expired') === 'true') {
-      setSessionExpiredMessage('Your session has expired. Please log in again.');
+      setSessionExpiredMessage('セッションの有効期限が切れました。再度ログインしてください。');
       setTimeout(() => {
         setSessionExpiredMessage('');
       }, 8000);
@@ -138,14 +138,14 @@ export default function LoginPage() {
         <div className="max-w-md w-full">
           <div className="bg-darkgray rounded-2xl shadow-2xl p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-              <p className="text-gray-400">Sign in to continue your movie journey</p>
+              <h1 className="text-3xl font-bold mb-2">ログイン</h1>
+              <p className="text-gray-400">メールアドレスとパスワードでサインインしてください</p>
             </div>
 
             {sessionExpiredMessage && (
               <div className="bg-yellow-900/50 border border-yellow-600 text-yellow-200 px-4 py-3 rounded-lg flex items-center mb-6">
                 <FaExclamationTriangle className="mr-2" />
-                <span>{sessionExpiredMessage}</span>
+                <span>セッションの有効期限が切れました。再度ログインしてください。</span>
               </div>
             )}
 
@@ -178,20 +178,20 @@ export default function LoginPage() {
                 <div className="w-full border-t border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-darkgray text-gray-400">Or continue with email</span>
+                <span className="px-4 bg-darkgray text-gray-400">またはメールアドレスでサインイン</span>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">メールアドレス</label>
                 <div className="relative">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                    placeholder="Enter your email"
+                    placeholder="メールアドレスを入力"
                   />
                   <FaEnvelope className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 </div>
@@ -203,14 +203,14 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">パスワード</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-12"
-                    placeholder="Enter your password"
+                    placeholder="パスワードを入力"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -226,10 +226,10 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <label className="flex items-center">
                   <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 text-primary bg-lightgray border-gray-600 rounded focus:ring-primary focus:ring-2" />
-                  <span className="ml-2 text-sm text-gray-300">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-300">ログイン状態を保持</span>
                 </label>
                 <button type="button" className="text-sm text-primary hover:text-secondary transition-colors" onClick={() => router.push('/forgot-password')}>
-                  Forgot password?
+                  パスワードをお忘れですか？
                 </button>
               </div>
 
@@ -243,7 +243,7 @@ export default function LoginPage() {
               {success && (
                 <div className="bg-green-900/50 border border-green-600 text-green-200 px-4 py-3 rounded-lg flex items-center">
                   <FaCheckCircle className="mr-2" />
-                  <span>Login successful! Redirecting...</span>
+                  <span>ログインに成功しました。リダイレクト中...</span>
                 </div>
               )}
 
@@ -251,19 +251,19 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin mr-2" />
-                    <span>Signing In...</span>
+                    <span>サインイン中...</span>
                   </>
                 ) : (
-                  <span>Sign In</span>
+                  <span>サインイン</span>
                 )}
               </button>
             </form>
 
             <div className="text-center mt-6 pt-6 border-t border-gray-600">
               <p className="text-gray-400">
-                Don't have an account?
+                アカウントをお持ちでない方は
                 <Link href="/signup" className="text-primary hover:text-secondary transition-colors font-medium ml-1">
-                  Create one now
+                  新規登録はこちら
                 </Link>
               </p>
             </div>
