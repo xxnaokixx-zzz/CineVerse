@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import GenreModal from './GenreModal'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -13,6 +14,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSearchQuery, setMobileSearchQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [genreModalOpen, setGenreModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const router = useRouter()
@@ -80,6 +82,7 @@ export default function Header() {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
+  const toggleGenreModal = () => setGenreModalOpen(!genreModalOpen)
 
   const handleLogout = async () => {
     try {
@@ -140,11 +143,13 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Movies', href: '/movies' },
-    { name: 'Anime', href: '/anime' },
-    { name: 'Drama', href: '/drama' },
     { name: 'Watchlist', href: '/watchlist' },
   ]
+
+  // ジャンルページかどうかを判定する関数
+  const isGenrePage = (path: string) => {
+    return ['/movies', '/anime', '/drama'].includes(path)
+  }
 
   return (
     <header className="bg-darkgray sticky top-0 z-50 shadow-lg">
@@ -166,6 +171,16 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
+
+            {/* ジャンルボタン */}
+            <button
+              onClick={toggleGenreModal}
+              className={`font-medium hover:text-primary transition-colors flex items-center space-x-1 ${isGenrePage(pathname) ? 'text-primary' : ''
+                }`}
+            >
+              <span>Genre</span>
+              <FaChevronDown className="text-sm" />
+            </button>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -279,6 +294,16 @@ export default function Header() {
                   {link.name}
                 </Link>
               ))}
+
+              {/* モバイル用ジャンルボタン */}
+              <button
+                onClick={toggleGenreModal}
+                className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname) ? 'text-primary' : ''
+                  }`}
+              >
+                Genre
+              </button>
+
               {!user && (
                 <div className="flex flex-col space-y-3 pt-3 border-t border-gray-700">
                   <Link href="/login" className="font-medium hover:text-primary transition-colors">
@@ -293,6 +318,9 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      {/* ジャンル選択モーダル */}
+      <GenreModal isOpen={genreModalOpen} onClose={() => setGenreModalOpen(false)} />
     </header>
   )
 } 
