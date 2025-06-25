@@ -120,7 +120,7 @@ export default function SearchPage() {
                   title={'title' in item ? item.title : item.name}
                   rating={item.vote_average.toFixed(1)}
                   year={'release_date' in item ? (item.release_date ? item.release_date.substring(0, 4) : 'N/A') : (item.first_air_date ? item.first_air_date.substring(0, 4) : 'N/A')}
-                  mediaType={item.media_type}
+                  mediaType={item.media_type === 'movie' || item.media_type === 'tv' ? item.media_type : 'movie'}
                 />
               ))}
             </div>
