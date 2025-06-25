@@ -33,6 +33,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
   const [isEditing, setIsEditing] = useState(false);
   const [editFirstName, setEditFirstName] = useState(firstName);
   const [editLastName, setEditLastName] = useState(lastName);
+  const [showNameModal, setShowNameModal] = useState(!initialFirstName || !initialLastName);
 
   // セッション監視を追加
   useEffect(() => {
@@ -66,6 +67,10 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
       return () => clearTimeout(timer);
     }
   }, [saveMsg]);
+
+  useEffect(() => {
+    setShowNameModal(!firstName && !lastName);
+  }, [firstName, lastName]);
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -186,6 +191,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
       setFirstName(editFirstName);
       setLastName(editLastName);
       setIsEditing(false);
+      setShowNameModal(false);
       router.refresh();
     }
   };
@@ -359,6 +365,43 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
               </div>
             </div>
           </div>
+
+          {/* プロフィール名未登録時のモーダル */}
+          {showNameModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+              <div className="bg-darkgray p-8 rounded-lg shadow-lg w-full max-w-md">
+                <h2 className="text-xl font-bold mb-4">プロフィール名を登録してください</h2>
+                <div className="mb-4">
+                  <label className="block text-gray-300 mb-1">First Name</label>
+                  <input
+                    type="text"
+                    value={editFirstName}
+                    onChange={e => setEditFirstName(e.target.value)}
+                    className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="First Name"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-300 mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    value={editLastName}
+                    onChange={e => setEditLastName(e.target.value)}
+                    className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Last Name"
+                  />
+                </div>
+                <button
+                  onClick={handleSaveName}
+                  disabled={saving || !editFirstName || !editLastName}
+                  className="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold py-2 px-6 rounded-lg shadow-lg transition-colors disabled:opacity-60 w-full"
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                {saveMsg && <div className="mt-4 text-green-400 text-center">{saveMsg}</div>}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </main>

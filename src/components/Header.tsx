@@ -32,15 +32,30 @@ export default function Header() {
       if (user) {
         setUser(user)
         // プロフィール情報を取得
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from('profiles')
           .select('avatar_url, first_name, last_name')
           .eq('id', user.id)
           .single()
 
-        if (!profile?.avatar_url || !profile?.first_name || !profile?.last_name) {
-          // Google: user.user_metadata.picture, user.user_metadata.given_name, user.user_metadata.family_name
-          // GitHub: user.user_metadata.avatar_url, user.user_metadata.name
+        if (!profile) {
+          // レコードがなければinsert
+          await supabase.from('profiles').insert({
+            id: user.id,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+            first_name: user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null),
+            last_name: user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null),
+            email: user.email
+          });
+          // insert後に再度select
+          const { data: insertedProfile } = await supabase
+            .from('profiles')
+            .select('avatar_url, first_name, last_name')
+            .eq('id', user.id)
+            .single();
+          profile = insertedProfile;
+        } else if (!profile?.avatar_url || !profile?.first_name || !profile?.last_name) {
+          // 既存ロジック: update
           const oauthAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
           const givenName = user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null);
           const familyName = user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null);
@@ -55,6 +70,13 @@ export default function Header() {
               .from('profiles')
               .update(updateData)
               .eq('id', user.id);
+            // update後に再度select
+            const { data: updatedProfile } = await supabase
+              .from('profiles')
+              .select('avatar_url, first_name, last_name')
+              .eq('id', user.id)
+              .single();
+            profile = updatedProfile;
           }
         }
 

@@ -28,7 +28,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
-    domains: ['image.tmdb.org', 'lh3.googleusercontent.com'],
+    domains: ['image.tmdb.org', 'lh3.googleusercontent.com', 'avatars.githubusercontent.com'],
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -36,12 +36,14 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
         </div>
         <div className="p-6 space-y-6 flex flex-col items-center">
           <div className="flex flex-col items-center space-y-2">
-            {avatarUrl ? (
-              <div className="w-20 h-20 rounded-full overflow-hidden mb-2 flex items-center justify-center bg-primary/20">
+            {avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('/')) ? (
+              <div className="w-24 h-24 md:w-32 md:h-32 iphonepro:w-20 iphonepro:h-20 rounded-full overflow-hidden border-4 border-white mb-6">
                 <Image src={avatarUrl} alt="Profile" width={80} height={80} className="object-cover w-full h-full" />
               </div>
             ) : (
-              <FaUserCircle className="text-5xl text-primary mb-2" />
+              <div className="w-24 h-24 md:w-32 md:h-32 iphonepro:w-20 iphonepro:h-20 rounded-full overflow-hidden border-4 border-white mb-6">
+                <Image src="/default-avatar.svg" alt="Profile" width={80} height={80} className="object-cover w-full h-full" />
+              </div>
             )}
             <div className="text-white font-semibold text-center">{displayName}</div>
           </div>
@@ -52,16 +54,10 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
               <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>退会</Link>
             ) : (
               <div className="w-full flex flex-col items-center">
-                <p className="text-xs text-gray-400 mb-2 text-center">
+                <p className="text-xs text-gray-400 mt-4 text-center">
                   GoogleやGitHubの「アプリへのアクセス権」はご自身で解除してください。<br />
-                  <a
-                    href="https://myaccount.google.com/permissions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    Google連携解除はこちら
-                  </a>
+                  <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-400">Google連携解除はこちら</a><br />
+                  <a href="https://github.com/settings/applications" target="_blank" rel="noopener noreferrer" className="underline hover:text-yellow-400">GitHubの連携解除はこちら</a>
                 </p>
               </div>
             )}
