@@ -42,7 +42,7 @@ export default function AIRecommendationPage() {
     <div className="bg-dark text-white py-2 px-2">
       <div className="max-w-3xl mx-auto">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/?openAIModal=1')}
           className="flex items-center space-x-2 text-primary hover:text-primary/80 transition-colors mb-2"
         >
           <FaArrowLeft className="text-sm" />

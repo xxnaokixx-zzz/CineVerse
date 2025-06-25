@@ -13,7 +13,7 @@ const aiFeatures = [
   },
   {
     id: "summary",
-    name: "映画・アニメの要約（開発中）",
+    name: "作品の要約（開発中）",
     description: "作品の内容をAIが要約・解説",
     icon: FaFileAlt,
     available: false,

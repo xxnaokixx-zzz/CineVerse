@@ -4,10 +4,9 @@ import { FaFilm, FaChevronDown, FaBars, FaSearch, FaSignOutAlt, FaUserCircle, Fa
 import { FaRegUser } from 'react-icons/fa6'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import GenreModal from './GenreModal'
-import AIFeaturesModal from './AIFeaturesModal'
 import AccountModal from './AccountModal'
 
 export default function Header() {
@@ -17,13 +16,13 @@ export default function Header() {
   const [mobileSearchQuery, setMobileSearchQuery] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [genreModalOpen, setGenreModalOpen] = useState(false)
-  const [aiFeaturesModalOpen, setAiFeaturesModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [accountModalOpen, setAccountModalOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -62,11 +61,16 @@ export default function Header() {
     }
   }, [])
 
+  useEffect(() => {
+    if (pathname === '/' && searchParams.get('openAIModal') === '1') {
+      router.push('/ai')
+    }
+  }, [pathname, searchParams])
+
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen)
   const toggleGenreModal = () => setGenreModalOpen(!genreModalOpen)
-  const toggleAIFeaturesModal = () => setAiFeaturesModalOpen(!aiFeaturesModalOpen)
 
   const handleLogout = async () => {
     try {
@@ -167,7 +171,7 @@ export default function Header() {
 
             {/* AI機能ボタン */}
             <button
-              onClick={toggleAIFeaturesModal}
+              onClick={() => router.push('/ai')}
               className="font-medium hover:text-primary transition-colors"
             >
               <span>AI機能</span>
@@ -276,7 +280,7 @@ export default function Header() {
 
               {/* モバイル用AI機能ボタン */}
               <button
-                onClick={toggleAIFeaturesModal}
+                onClick={() => { setMobileMenuOpen(false); router.push('/ai') }}
                 className="font-medium hover:text-primary transition-colors text-left flex items-center space-x-2"
               >
                 <span>AI機能</span>
@@ -299,9 +303,6 @@ export default function Header() {
 
       {/* ジャンル選択モーダル */}
       <GenreModal isOpen={genreModalOpen} onClose={() => setGenreModalOpen(false)} />
-
-      {/* AI機能モーダル */}
-      <AIFeaturesModal isOpen={aiFeaturesModalOpen} onClose={() => setAiFeaturesModalOpen(false)} />
     </header>
   )
 } 
