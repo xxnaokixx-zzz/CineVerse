@@ -1,9 +1,9 @@
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark text-white">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404 - ページが見つかりません</h1>
-        <p className="text-gray-400">お探しのページは存在しません。</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#121212', color: '#fff' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>404 - ページが見つかりません</h1>
+        <p style={{ color: '#aaa' }}>お探しのページは存在しません。</p>
       </div>
     </div>
   );
