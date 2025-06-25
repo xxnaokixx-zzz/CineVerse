@@ -8,6 +8,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import GenreModal from './GenreModal'
 import AIFeaturesModal from './AIFeaturesModal'
+import AccountModal from './AccountModal'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -19,6 +20,7 @@ export default function Header() {
   const [aiFeaturesModalOpen, setAiFeaturesModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [accountModalOpen, setAccountModalOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
@@ -59,27 +61,6 @@ export default function Header() {
       subscription.unsubscribe()
     }
   }, [])
-
-  // ドロップダウン外クリックで閉じる
-  useEffect(() => {
-    if (!dropdownOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      const dropdown = document.getElementById('account-dropdown');
-      const avatarBtn = document.getElementById('account-avatar-btn');
-      if (
-        dropdown &&
-        !dropdown.contains(event.target as Node) &&
-        avatarBtn &&
-        !avatarBtn.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    };
-    window.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      window.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdownOpen]);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen)
   const toggleMobileSearch = () => setMobileSearchOpen(!mobileSearchOpen)
@@ -155,7 +136,7 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-darkgray sticky top-0 z-50 shadow-lg">
+    <header className="bg-black sticky top-0 z-50 shadow-lg border-b border-gray-800">
       <div className="container mx-auto px-4 py-3 iphonepro:px-2 iphonepro:max-w-[430px]">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center cursor-pointer">
@@ -213,7 +194,7 @@ export default function Header() {
                 <button
                   id="account-avatar-btn"
                   className="flex items-center space-x-2 focus:outline-none"
-                  onClick={toggleDropdown}
+                  onClick={() => setAccountModalOpen(true)}
                   type="button"
                 >
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
@@ -230,34 +211,13 @@ export default function Header() {
                     )}
                   </div>
                 </button>
-
-                {dropdownOpen && (
-                  <div id="account-dropdown" className="absolute right-0 mt-2 w-48 bg-darkgray rounded-lg shadow-lg py-2 border border-gray-700">
-                    <Link
-                      href="/account"
-                      className="flex items-center px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaUserCircle className="mr-2" />
-                      プロフィール
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-700 cursor-pointer"
-                    >
-                      <FaSignOutAlt className="mr-2" />
-                      ログアウト
-                    </button>
-                    <Link
-                      href="/account/delete"
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-500 hover:bg-gray-700 cursor-pointer"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <FaTrash className="mr-2" />
-                      退会
-                    </Link>
-                  </div>
-                )}
+                <AccountModal
+                  isOpen={accountModalOpen}
+                  onClose={() => setAccountModalOpen(false)}
+                  onLogout={handleLogout}
+                  user={user}
+                  avatarUrl={avatarUrl}
+                />
               </div>
             ) : (
               <div className="hidden md:flex items-center space-x-4">
