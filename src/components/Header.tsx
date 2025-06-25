@@ -18,6 +18,8 @@ export default function Header() {
   const [genreModalOpen, setGenreModalOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState<string>('')
+  const [lastName, setLastName] = useState<string>('')
   const [accountModalOpen, setAccountModalOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
@@ -32,18 +34,26 @@ export default function Header() {
         // プロフィール情報を取得
         const { data: profile } = await supabase
           .from('profiles')
-          .select('avatar_url')
+          .select('avatar_url, first_name, last_name')
           .eq('id', user.id)
           .single()
 
-        if (!profile?.avatar_url) {
-          // Google: user.user_metadata.picture, GitHub: user.user_metadata.avatar_url
+        if (!profile?.avatar_url || !profile?.first_name || !profile?.last_name) {
+          // Google: user.user_metadata.picture, user.user_metadata.given_name, user.user_metadata.family_name
+          // GitHub: user.user_metadata.avatar_url, user.user_metadata.name
           const oauthAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-          if (oauthAvatar) {
-            // profilesテーブルに保存
+          const givenName = user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null);
+          const familyName = user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null);
+
+          const updateData: any = {};
+          if (oauthAvatar && !profile?.avatar_url) updateData.avatar_url = oauthAvatar;
+          if (givenName && !profile?.first_name) updateData.first_name = givenName;
+          if (familyName && !profile?.last_name) updateData.last_name = familyName;
+
+          if (Object.keys(updateData).length > 0) {
             await supabase
               .from('profiles')
-              .update({ avatar_url: oauthAvatar })
+              .update(updateData)
               .eq('id', user.id);
           }
         }
@@ -53,6 +63,9 @@ export default function Header() {
         } else {
           setAvatarUrl(null)
         }
+        // 名前情報も設定
+        setFirstName(profile?.first_name || '')
+        setLastName(profile?.last_name || '')
       } else {
         setUser(null)
         setAvatarUrl(null)
@@ -242,6 +255,8 @@ export default function Header() {
                   onLogout={handleLogout}
                   user={user}
                   avatarUrl={avatarUrl}
+                  firstName={firstName}
+                  lastName={lastName}
                 />
               </div>
             ) : (

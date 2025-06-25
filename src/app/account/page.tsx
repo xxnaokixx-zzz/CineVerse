@@ -54,7 +54,7 @@ export default async function AccountPage() {
 
     supabase
       .from('profiles')
-      .select('avatar_url')
+      .select('avatar_url, first_name, last_name')
       .eq('id', userId)
       .single()
   ]);
@@ -69,6 +69,9 @@ export default async function AccountPage() {
   console.log('profileResult:', profileResult.data);
   console.log('avatarUrl:', avatarUrl);
 
+  const firstName = profileResult.data?.first_name || '';
+  const lastName = profileResult.data?.last_name || '';
+
   return (
     <AccountClient
       user={user}
@@ -80,6 +83,8 @@ export default async function AccountPage() {
         watching: watchingResult.count ?? 0,
         favorites: favoritesResult.count ?? 0,
       }}
+      firstName={firstName}
+      lastName={lastName}
     />
   );
 }

@@ -6,12 +6,21 @@ interface AccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLogout: () => void;
-  user?: { email?: string } | null;
+  user?: any | null; // Supabaseユーザーオブジェクトを想定
   avatarUrl?: string | null;
+  firstName?: string;
+  lastName?: string;
 }
 
-export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUrl }: AccountModalProps) {
+export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUrl, firstName, lastName }: AccountModalProps) {
   if (!isOpen) return null;
+  const provider = user?.app_metadata?.provider;
+  // full name生成（propsのfirstName/lastNameを優先）
+  const fullName =
+    (lastName || user?.user_metadata?.last_name || '') +
+    ((lastName || user?.user_metadata?.last_name) && (firstName || user?.user_metadata?.first_name) ? ' ' : '') +
+    (firstName || user?.user_metadata?.first_name || '');
+  const displayName = fullName.trim() || user?.email || 'ゲスト';
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-darkgray rounded-lg shadow-xl max-w-sm w-full mx-4">
@@ -34,12 +43,28 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
             ) : (
               <FaUserCircle className="text-5xl text-primary mb-2" />
             )}
-            <div className="text-white font-semibold text-center">{user?.email || 'ゲスト'}</div>
+            <div className="text-white font-semibold text-center">{displayName}</div>
           </div>
           <div className="space-y-3 w-full flex flex-col items-center">
             <Link href="/account" className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>プロフィール</Link>
             <button onClick={onLogout} className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">ログアウト</button>
-            <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>退会</Link>
+            {provider === 'email' ? (
+              <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>退会</Link>
+            ) : (
+              <div className="w-full flex flex-col items-center">
+                <p className="text-xs text-gray-400 mb-2 text-center">
+                  GoogleやGitHubの「アプリへのアクセス権」はご自身で解除してください。<br />
+                  <a
+                    href="https://myaccount.google.com/permissions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    Google連携解除はこちら
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

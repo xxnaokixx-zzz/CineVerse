@@ -240,12 +240,6 @@ export default function LoginClient() {
                   <span>{errors.general}</span>
                 </div>
               )}
-              {success && (
-                <div className="bg-green-900/50 border border-green-600 text-green-200 px-4 py-3 rounded-lg flex items-center">
-                  <FaCheckCircle className="mr-2" />
-                  <span>ログインに成功しました。リダイレクト中...</span>
-                </div>
-              )}
               <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50">
                 {loading ? (
                   <>

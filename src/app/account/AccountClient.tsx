@@ -17,13 +17,22 @@ interface AccountClientProps {
     watching: number;
     favorites: number;
   };
+  firstName: string;
+  lastName: string;
 }
 
-export default function AccountClient({ user, avatarUrl, counts }: AccountClientProps) {
+export default function AccountClient({ user, avatarUrl, counts, firstName: initialFirstName, lastName: initialLastName }: AccountClientProps) {
   const [uploading, setUploading] = useState(false);
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFirstName, setEditFirstName] = useState(firstName);
+  const [editLastName, setEditLastName] = useState(lastName);
 
   // セッション監視を追加
   useEffect(() => {
@@ -49,6 +58,14 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
       subscription.unsubscribe();
     };
   }, [router]);
+
+  // 5秒後に保存メッセージを自動で消す
+  useEffect(() => {
+    if (saveMsg) {
+      const timer = setTimeout(() => setSaveMsg(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveMsg]);
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -143,13 +160,40 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
     }
   };
 
-  const fullName = [user.user_metadata?.first_name, user.user_metadata?.last_name]
-    .filter(Boolean)
-    .join(' ') || 'User';
+  const handleEdit = () => {
+    setEditFirstName(firstName);
+    setEditLastName(lastName);
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setEditFirstName(firstName);
+    setEditLastName(lastName);
+    setIsEditing(false);
+  };
+
+  const handleSaveName = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('profiles')
+      .update({ first_name: editFirstName, last_name: editLastName })
+      .eq('id', user.id);
+    setSaving(false);
+    setSaveMsg(error ? (error.message || '保存に失敗しました') : '保存しました');
+    if (!error) {
+      setFirstName(editFirstName);
+      setLastName(editLastName);
+      setIsEditing(false);
+      router.refresh();
+    }
+  };
+
+  // User欄の表示を「Last Name + First Name」に
+  const fullName = [lastName, firstName].filter(Boolean).join(' ') || 'User';
   const email = user.email;
   const joined = user.created_at ? new Date(user.created_at).toLocaleDateString() : '';
-  const firstName = user.user_metadata?.first_name || '';
-  const lastName = user.user_metadata?.last_name || '';
 
   return (
     <main className="bg-dark text-white font-sans min-h-screen">
@@ -191,6 +235,11 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
               {error}
             </div>
           )}
+          {saveMsg && (
+            <div className="mt-4 p-3 bg-green-700/80 border border-green-500 text-green-100 rounded-lg text-center font-semibold shadow">
+              {saveMsg}
+            </div>
+          )}
         </div>
       </section>
 
@@ -223,16 +272,63 @@ export default function AccountClient({ user, avatarUrl, counts }: AccountClient
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm text-gray-400 mb-1">First Name</div>
-                      <div className="text-lg">{firstName || '-'}</div>
+                      {!isEditing ? (
+                        <div className="text-lg">{firstName || '-'}</div>
+                      ) : (
+                        <input
+                          type="text"
+                          value={editFirstName}
+                          onChange={e => setEditFirstName(e.target.value)}
+                          className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                          placeholder="First Name"
+                        />
+                      )}
                     </div>
                     <div>
                       <div className="text-sm text-gray-400 mb-1">Last Name</div>
-                      <div className="text-lg">{lastName || '-'}</div>
+                      {!isEditing ? (
+                        <div className="text-lg">{lastName || '-'}</div>
+                      ) : (
+                        <input
+                          type="text"
+                          value={editLastName}
+                          onChange={e => setEditLastName(e.target.value)}
+                          className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
+                          placeholder="Last Name"
+                        />
+                      )}
                     </div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-400 mb-1">Email</div>
                     <div className="text-lg">{email}</div>
+                  </div>
+                  <div className="flex gap-2 mt-6">
+                    {!isEditing ? (
+                      <button
+                        onClick={handleEdit}
+                        className="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold py-2 px-6 rounded-lg shadow-lg transition-colors"
+                      >
+                        編集
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={handleSaveName}
+                          disabled={saving}
+                          className="bg-yellow-400 hover:bg-yellow-300 text-black font-semibold py-2 px-6 rounded-lg shadow-lg transition-colors disabled:opacity-60"
+                        >
+                          {saving ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={handleCancel}
+                          disabled={saving}
+                          className="bg-gray-300 hover:bg-gray-200 text-black font-semibold py-2 px-6 rounded-lg shadow-lg transition-colors disabled:opacity-60 ml-2"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

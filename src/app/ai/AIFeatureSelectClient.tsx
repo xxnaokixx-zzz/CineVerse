@@ -40,7 +40,7 @@ const aiFeatures = [
 export default function AIFeatureSelectClient() {
   const router = useRouter();
   return (
-    <div className="bg-dark text-white px-4 mt-[-8px]">
+    <div className="bg-dark text-white px-4 mt-[-8px] pt-20">
       <div className="max-w-2xl w-full mx-auto">
         <h1 className="text-3xl font-bold text-center mb-2 mt-[-64px]">AI機能メニュー</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
