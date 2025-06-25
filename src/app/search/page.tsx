@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { multiSearch, MediaItem, getImageUrl } from '@/services/movieService';
 import MovieCard from '@/components/MovieCard';
 import { FaSearch, FaSpinner } from 'react-icons/fa';
 
-export default function SearchPage() {
+function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
@@ -148,5 +148,13 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-dark text-white flex items-center justify-center">Loading...</div>}>
+      <SearchPage />
+    </Suspense>
   );
 } 
