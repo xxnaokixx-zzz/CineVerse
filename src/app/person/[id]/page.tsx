@@ -6,7 +6,7 @@ import { FaStar, FaFilm, FaBookmark, FaShare, FaUser } from 'react-icons/fa';
 import MovieCard from '@/components/MovieCard';
 import PersonClientPage from './PersonClientPage';
 
-export default async function PersonPage({ params }: { params: { id: string } }) {
+export default async function PersonPage({ params }: any) {
   const { id } = params;
 
   try {
