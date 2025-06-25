@@ -6,14 +6,7 @@ import { FaStar, FaFilm, FaBookmark, FaShare, FaUser } from 'react-icons/fa';
 import MovieCard from '@/components/MovieCard';
 import PersonClientPage from './PersonClientPage';
 
-type PageProps = {
-  params: {
-    id: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export default async function PersonDetailPage({ params }: PageProps) {
+export default async function PersonDetailPage({ params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
