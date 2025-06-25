@@ -27,7 +27,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <Header />
         </Suspense>
-        <main className="pt-20">
+        <main className="pt-5">
           {children}
         </main>
         <Footer />

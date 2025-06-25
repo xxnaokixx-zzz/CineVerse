@@ -36,11 +36,20 @@ export default function Header() {
           .eq('id', user.id)
           .single()
 
+        if (!profile?.avatar_url) {
+          // Google: user.user_metadata.picture, GitHub: user.user_metadata.avatar_url
+          const oauthAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+          if (oauthAvatar) {
+            // profilesテーブルに保存
+            await supabase
+              .from('profiles')
+              .update({ avatar_url: oauthAvatar })
+              .eq('id', user.id);
+          }
+        }
+
         if (profile?.avatar_url) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(profile.avatar_url)
-          setAvatarUrl(publicUrl)
+          setAvatarUrl(profile.avatar_url)
         } else {
           setAvatarUrl(null)
         }
@@ -139,6 +148,15 @@ export default function Header() {
     return ['/movies', '/anime', '/drama'].includes(path)
   }
 
+  // avatarUrlの表示用URLを判定
+  console.log('avatarUrl:', avatarUrl);
+  const displayAvatarUrl = avatarUrl && avatarUrl.startsWith('http')
+    ? avatarUrl
+    : avatarUrl
+      ? supabase.storage.from('avatars').getPublicUrl(avatarUrl).data.publicUrl
+      : '/default-avatar.svg';
+  console.log('displayAvatarUrl:', displayAvatarUrl);
+
   return (
     <header className="bg-black sticky top-0 z-50 shadow-lg border-b border-gray-800">
       <div className="container mx-auto px-4 py-3 iphonepro:px-2 iphonepro:max-w-[430px]">
@@ -203,13 +221,16 @@ export default function Header() {
                 >
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
                     {avatarUrl ? (
-                      <Image
-                        src={avatarUrl}
-                        alt="Profile"
-                        width={32}
-                        height={32}
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <Image
+                          src={displayAvatarUrl}
+                          alt="Profile"
+                          width={32}
+                          height={32}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
+                      </>
                     ) : (
                       <FaRegUser />
                     )}

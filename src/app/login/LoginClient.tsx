@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaFilm, FaGoogle, FaEnvelope, FaEye, FaEyeSlash, FaExclamationCircle, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6';
+import { FaGithub } from 'react-icons/fa6';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -15,7 +15,6 @@ export default function LoginClient() {
   const [errors, setErrors] = useState({ email: '', password: '', general: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [socialLoginMessage, setSocialLoginMessage] = useState('');
   const [sessionExpiredMessage, setSessionExpiredMessage] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,11 +49,46 @@ export default function LoginClient() {
     return '/';
   };
 
-  const handleSocialLoginClick = () => {
-    setSocialLoginMessage('随時対応予定です。一旦メールアドレスからログインをお願いします');
-    setTimeout(() => {
-      setSocialLoginMessage('');
-    }, 6000);
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setErrors({ email: '', password: '', general: '' });
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/login',
+        },
+      });
+      if (error) {
+        setErrors(prev => ({ ...prev, general: 'Google認証でエラーが発生しました。' }));
+      }
+    } catch (e) {
+      setErrors(prev => ({ ...prev, general: 'Google認証で予期せぬエラーが発生しました。' }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    setLoading(true);
+    setErrors({ email: '', password: '', general: '' });
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: window.location.origin + '/login',
+        },
+      });
+      if (error) {
+        setErrors(prev => ({ ...prev, general: 'GitHub認証でエラーが発生しました。' }));
+      }
+    } catch (e) {
+      setErrors(prev => ({ ...prev, general: 'GitHub認証で予期せぬエラーが発生しました。' }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,12 +148,12 @@ export default function LoginClient() {
 
   return (
     <div className="bg-dark text-white font-sans min-h-screen flex flex-col">
-      <div className="flex-grow flex items-start justify-center pt-4 pb-12 px-4">
+      <div className="flex-grow flex items-start justify-center pt-0 pb-12 px-4">
         <div className="max-w-md w-full">
           <div className="bg-darkgray rounded-2xl shadow-2xl p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-2">ログイン</h1>
-              <p className="text-gray-400">メールアドレスとパスワードでサインインしてください</p>
+              <p className="text-gray-400">認証サービスまたはメールアドレスでサインインしてください</p>
             </div>
             {sessionExpiredMessage && (
               <div className="bg-yellow-900/50 border border-yellow-600 text-yellow-200 px-4 py-3 rounded-lg flex items-center mb-6">
@@ -129,26 +163,21 @@ export default function LoginClient() {
             )}
             <div className="space-y-3 mb-6">
               <button
-                onClick={handleSocialLoginClick}
+                onClick={handleGoogleLogin}
                 className="w-full bg-white hover:bg-gray-100 text-black py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
               >
                 <FaGoogle className="mr-3 text-lg text-gray-600" />
                 Continue with Google
               </button>
               <button
-                onClick={handleSocialLoginClick}
+                onClick={handleGithubLogin}
                 className="w-full bg-black hover:bg-gray-800 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center"
+                disabled={loading}
               >
-                <FaXTwitter className="mr-3 text-lg" />
-                Continue with X
+                <FaGithub className="mr-3 text-lg" />
+                Continue with GitHub
               </button>
             </div>
-            {socialLoginMessage && (
-              <div className="bg-blue-900/50 border border-blue-600 text-blue-200 px-4 py-3 rounded-lg flex items-center mb-6">
-                <FaInfoCircle className="mr-2" />
-                <span>{socialLoginMessage}</span>
-              </div>
-            )}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-600"></div>

@@ -21,8 +21,14 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
-    domains: ['image.tmdb.org'],
+    domains: ['image.tmdb.org', 'lh3.googleusercontent.com'],
   },
   eslint: {
     ignoreDuringBuilds: true,

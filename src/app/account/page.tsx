@@ -60,7 +60,9 @@ export default async function AccountPage() {
   ]);
 
   const avatarUrl = profileResult.data?.avatar_url
-    ? supabase.storage.from('avatars').getPublicUrl(profileResult.data.avatar_url).data.publicUrl
+    ? profileResult.data.avatar_url.startsWith('http')
+      ? profileResult.data.avatar_url
+      : supabase.storage.from('avatars').getPublicUrl(profileResult.data.avatar_url).data.publicUrl
     : null;
 
   // デバッグ用ログ
