@@ -15,8 +15,15 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-darkgray rounded-lg shadow-xl max-w-sm w-full mx-4">
-        <div className="flex flex-col items-center justify-center p-6 border-b border-gray-700">
+        <div className="flex flex-col items-center justify-center p-6 border-b border-gray-700 relative">
           <h2 className="text-xl font-bold text-white text-center w-full">アカウント</h2>
+          <button
+            className="absolute right-4 top-4 text-gray-400 hover:text-white focus:outline-none"
+            onClick={onClose}
+            aria-label="閉じる"
+          >
+            <FaTimes size={20} />
+          </button>
         </div>
         <div className="p-6 space-y-6 flex flex-col items-center">
           <div className="flex flex-col items-center space-y-2">
@@ -30,9 +37,9 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
             <div className="text-white font-semibold text-center">{user?.email || 'ゲスト'}</div>
           </div>
           <div className="space-y-3 w-full flex flex-col items-center">
-            <Link href="/account" className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">プロフィール</Link>
+            <Link href="/account" className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>プロフィール</Link>
             <button onClick={onLogout} className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">ログアウト</button>
-            <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">退会</Link>
+            <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>退会</Link>
           </div>
         </div>
       </div>
