@@ -1,6 +1,7 @@
 import { FaTimes, FaUserCircle } from 'react-icons/fa';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface AccountModalProps {
 }
 
 export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUrl, firstName, lastName }: AccountModalProps) {
+  const router = useRouter();
   if (!isOpen) return null;
   const provider = user?.app_metadata?.provider;
   // full name生成（propsのfirstName/lastNameを優先）
@@ -48,7 +50,17 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
             <div className="text-white font-semibold text-center">{displayName}</div>
           </div>
           <div className="space-y-3 w-full flex flex-col items-center">
-            <Link href="/account" className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>プロフィール</Link>
+            <button
+              className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
+              onClick={() => {
+                onClose();
+                setTimeout(() => {
+                  router.push('/account');
+                }, 200);
+              }}
+            >
+              プロフィール
+            </button>
             <button onClick={onLogout} className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors">ログアウト</button>
             {provider === 'email' ? (
               <Link href="/account/delete" className="block w-full bg-red-700 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors" onClick={onClose}>退会</Link>
