@@ -51,7 +51,7 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
           </div>
           <div className="space-y-3 w-full flex flex-col items-center">
             <button
-              className="block w-full bg-lightgray hover:bg-primary/80 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
+              className="block w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
               onClick={() => {
                 onClose();
                 setTimeout(() => {
