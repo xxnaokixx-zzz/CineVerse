@@ -29,7 +29,9 @@ export default function LoginClient() {
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
-        window.location.reload();
+        if (window.location.pathname === '/login') {
+          window.location.replace('/');
+        }
       }
       if (event === 'SIGNED_OUT') {
         router.push('/login');
