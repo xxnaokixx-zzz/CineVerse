@@ -36,6 +36,14 @@ const SORT_OPTIONS = [
 
 const ANIMATION_GENRE_ID = 16;
 
+// ステータス正規化関数を追加
+const normalizeStatus = (status: string) => {
+  if (!status) return '';
+  const s = status.replace(/\s+/g, '').toLowerCase();
+  if (s === 'wanttowatch') return 'towatch';
+  return s;
+};
+
 export default function WatchlistClient({ items }: { items: any[] }) {
   const [list, setList] = useState(items);
   const [category, setCategory] = useState('all');
@@ -63,30 +71,30 @@ export default function WatchlistClient({ items }: { items: any[] }) {
   });
 
   // ステータスのカウントを厳密に行う
-  const watched = list.filter(item => item.status === 'Watched').length;
-  const toWatch = list.filter(item => item.status === 'To Watch').length;
-  const watching = list.filter(item => item.status === 'Watching').length;
+  const watched = list.filter(item => normalizeStatus(item.status) === 'watched').length;
+  const toWatch = list.filter(item => normalizeStatus(item.status) === 'towatch').length;
+  const watching = list.filter(item => normalizeStatus(item.status) === 'watching').length;
   const favoriteCount = list.filter(item => favorites[item.id]).length;
 
   console.log('Detailed status counts:', {
     total,
     watched: {
       count: watched,
-      items: list.filter(item => item.status === 'Watched').map(item => ({
+      items: list.filter(item => normalizeStatus(item.status) === 'watched').map(item => ({
         id: item.id,
         title: item.details?.title || item.details?.name
       }))
     },
     toWatch: {
       count: toWatch,
-      items: list.filter(item => item.status === 'To Watch').map(item => ({
+      items: list.filter(item => normalizeStatus(item.status) === 'towatch').map(item => ({
         id: item.id,
         title: item.details?.title || item.details?.name
       }))
     },
     watching: {
       count: watching,
-      items: list.filter(item => item.status === 'Watching').map(item => ({
+      items: list.filter(item => normalizeStatus(item.status) === 'watching').map(item => ({
         id: item.id,
         title: item.details?.title || item.details?.name
       }))
@@ -122,7 +130,7 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     if (status === 'Favorite') {
       statusOk = !!favorites[item.id];
     } else if (status !== 'all') {
-      statusOk = item.status === status;
+      statusOk = normalizeStatus(item.status) === status;
     }
     return catOk && statusOk;
   });
