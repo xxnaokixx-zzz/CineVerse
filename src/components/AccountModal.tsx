@@ -22,7 +22,7 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
     (firstName || user?.user_metadata?.first_name || '');
   const displayName = fullName.trim() || user?.email || 'ゲスト';
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-darkgray rounded-lg shadow-xl max-w-sm w-full mx-4">
         <div className="flex flex-col items-center justify-center p-6 border-b border-gray-700 relative">
           <h2 className="text-xl font-bold text-white text-center w-full">アカウント</h2>
