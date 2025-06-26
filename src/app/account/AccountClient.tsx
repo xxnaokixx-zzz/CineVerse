@@ -266,7 +266,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
       </section>
 
       {/* Account Content */}
-      <section className="py-8">
+      <section className="py-0 mb-8">
         <div className="container mx-auto px-4">
           {/* Profile Tab */}
           <div id="profile-tab" className="tab-content">

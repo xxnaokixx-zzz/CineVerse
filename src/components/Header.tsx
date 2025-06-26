@@ -194,20 +194,19 @@ export default function Header() {
 
   return (
     <header className="bg-black sticky top-0 z-50 shadow-lg border-b border-gray-800">
-      <div className="container mx-auto px-4 py-3 iphonepro:px-2 iphonepro:max-w-[430px]">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center cursor-pointer">
+      <div className="w-full pl-4 pr-0 py-3">
+        <div className="flex items-center w-full">
+          <Link href="/" className="flex items-center cursor-pointer flex-shrink-0">
             <FaFilm className="text-primary text-2xl mr-2" />
             <span className="text-xl font-bold">CineVerse</span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8 ml-auto mr-8">
             {navLinks.map(link => (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`font-medium hover:text-primary transition-colors ${pathname === link.href ? 'text-primary' : ''
-                  }`}
+                className={`font-medium hover:text-primary transition-colors ${pathname === link.href ? 'text-primary' : ''}`}
               >
                 {link.name}
               </Link>
@@ -216,8 +215,7 @@ export default function Header() {
             {/* ジャンルボタン */}
             <button
               onClick={toggleGenreModal}
-              className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname) ? 'text-primary' : ''
-                }`}
+              className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname) ? 'text-primary' : ''}`}
             >
               <span>Genre</span>
             </button>
@@ -229,23 +227,29 @@ export default function Header() {
             >
               <span>AI機能</span>
             </button>
+            {/* Searchページへのリンク */}
+            <Link
+              href="/search"
+              className={`font-medium hover:text-primary transition-colors ${pathname === '/search' ? 'text-primary' : ''}`}
+            >
+              Search
+            </Link>
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <form onSubmit={(e) => handleSearch(e, false)} className="relative hidden md:block">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-lightgray rounded-full py-2 pl-10 pr-4 w-64 focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </form>
-            <button onClick={toggleMobileSearch} className="md:hidden text-gray-300 hover:text-white">
-              <FaSearch className="text-xl" />
-            </button>
+          {/* サーチフォームをAI機能ボタンの右に配置 */}
+          {/* <form onSubmit={(e) => handleSearch(e, false)} className="relative hidden md:block max-w-xs ml-8">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-lightgray rounded-full py-2 pl-10 pr-4 w-64 max-w-xs focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </form> */}
 
+          {/* アバターをヘッダーの一番右端に配置 */}
+          <div className="flex-shrink-0 flex items-center pr-2">
             {user ? (
               <div className="relative">
                 <button
@@ -281,21 +285,12 @@ export default function Header() {
                   lastName={lastName}
                 />
               </div>
-            ) : (
-              <div className="hidden md:flex items-center space-x-4">
-                <Link href="/login" className="font-medium hover:text-primary transition-colors">
-                  Login
-                </Link>
-                <Link href="/signup" className="bg-primary px-4 py-2 rounded-full font-medium hover:bg-primary/80 transition-colors">
-                  Sign Up
-                </Link>
-              </div>
-            )}
-
-            <button onClick={toggleMobileMenu} className="md:hidden">
-              <FaBars className="text-xl" />
-            </button>
+            ) : null}
           </div>
+
+          <button onClick={toggleMobileMenu} className="md:hidden">
+            <FaBars className="text-xl" />
+          </button>
         </div>
 
         {mobileSearchOpen && (
@@ -320,8 +315,7 @@ export default function Header() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`font-medium hover:text-primary transition-colors cursor-pointer ${pathname === link.href ? 'text-primary' : ''
-                    }`}
+                  className={`font-medium hover:text-primary transition-colors cursor-pointer ${pathname === link.href ? 'text-primary' : ''}`}
                 >
                   {link.name}
                 </Link>
@@ -330,8 +324,7 @@ export default function Header() {
               {/* モバイル用ジャンルボタン */}
               <button
                 onClick={toggleGenreModal}
-                className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname) ? 'text-primary' : ''
-                  }`}
+                className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname) ? 'text-primary' : ''}`}
               >
                 Genre
               </button>

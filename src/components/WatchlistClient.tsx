@@ -216,10 +216,10 @@ export default function WatchlistClient({ items }: { items: any[] }) {
           {CATEGORY_LABELS.map(cat => (
             <button key={cat.value} className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${category === cat.value ? 'bg-primary text-white border-primary' : 'bg-darkgray text-gray-300 border-gray-600 hover:bg-primary/30'}`} onClick={() => setCategory(cat.value)}>{cat.label}</button>
           ))}
-          <select className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white" value={status} onChange={e => setStatus(e.target.value)}>
+          <select className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none" value={status} onChange={e => setStatus(e.target.value)}>
             {STATUS_SELECT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
-          <select className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white" value={sort} onChange={e => setSort(e.target.value)}>
+          <select className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none" value={sort} onChange={e => setSort(e.target.value)}>
             {SORT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
         </div>
@@ -265,7 +265,7 @@ export default function WatchlistClient({ items }: { items: any[] }) {
               {/* ステータス選択とお気に入りボタンを横に並べる */}
               <div className="flex gap-2 items-center mt-2">
                 <select
-                  className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`}
+                  className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`}
                   value={item.status || 'Unselected'}
                   onChange={e => handleStatusChange(item.id, e.target.value)}
                 >
