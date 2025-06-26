@@ -333,7 +333,8 @@ export default function MovieDetailPage({ params }: PageProps) {
       <AIAssistantModal
         isOpen={AIAssistantOpen}
         onClose={() => setAIAssistantOpen(false)}
-        movieTitle={movie.title}
+        title={movie.title}
+        contextType="movie"
       />
     </>
   );

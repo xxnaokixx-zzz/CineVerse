@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 interface AIAssistantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  movieTitle: string;
+  title: string;
+  contextType: 'movie' | 'person';
 }
 
 type Mode = 'summary' | 'question';
 type Spoiler = 'with' | 'without';
 
-const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, movieTitle }) => {
+const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, title, contextType }) => {
   const [mode, setMode] = useState<Mode>('summary');
   const [spoiler, setSpoiler] = useState<Spoiler>('without');
   const [question, setQuestion] = useState('');
@@ -25,15 +26,21 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, mo
     setError('');
     setResponse('');
     try {
-      const res = await fetch('/api/ai/summary-or-question', {
+      const endpoint = contextType === 'person' ? '/api/ai/person-assistant' : '/api/ai/summary-or-question';
+      const payload: any = {
+        mode,
+        title,
+      };
+      if (contextType === 'movie') {
+        payload.spoiler = spoiler;
+      }
+      if (mode === 'question') {
+        payload.question = question;
+      }
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode,
-          movieTitle,
-          spoiler,
-          question: mode === 'question' ? question : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -58,7 +65,7 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, mo
         >
           ×
         </button>
-        <h2 className="text-lg font-bold mb-4 text-gray-900 text-center">AI要約・質問アシスタント</h2>
+        <h2 className="text-lg font-bold mb-4 text-gray-900 text-center">AIアシスタント</h2>
         <form onSubmit={handleSubmit}>
           {/* 実行モードグループ */}
           <div className="mb-6 flex flex-col items-center">
@@ -87,8 +94,8 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, mo
             </div>
           </div>
 
-          {/* 要約モード時のネタバレ有無グループ */}
-          {mode === 'summary' && (
+          {/* 要約オプション（映画の場合のみ表示） */}
+          {contextType === 'movie' && mode === 'summary' && (
             <div className="mb-6 flex flex-col items-center">
               <div className="text-gray-700 font-semibold mb-2 text-center">要約オプション</div>
               <div className="flex flex-col gap-2 items-center">
@@ -147,7 +154,7 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, mo
         )}
 
         {/* ネタバレ警告ラベル */}
-        {mode === 'summary' && spoiler === 'with' && (
+        {contextType === 'movie' && mode === 'summary' && spoiler === 'with' && (
           <div className="mt-4 text-red-600 font-bold text-center">⚠ ネタバレを含みます</div>
         )}
 

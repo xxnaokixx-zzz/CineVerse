@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { mode, title, spoiler, question } = await request.json();
+    const { mode, title, question } = await request.json();
 
     if (!mode || !title || (mode === 'question' && !question)) {
       return NextResponse.json(
@@ -22,13 +22,9 @@ export async function POST(request: NextRequest) {
     // プロンプト生成
     let userPrompt = '';
     if (mode === 'summary') {
-      if (spoiler === 'with') {
-        userPrompt = `映画『${title}』の内容を、重要な展開（ネタバレ）も含めて2〜3行で要約してください。`;
-      } else {
-        userPrompt = `映画『${title}』の内容をネタバレなしで、2〜3行で要約してください。`;
-      }
+      userPrompt = `俳優・監督『${title}』の経歴や代表作を2〜3行で要約してください。`;
     } else if (mode === 'question') {
-      userPrompt = `映画『${title}』について質問です：${question}`;
+      userPrompt = `俳優・監督『${title}』について質問です：${question}`;
     }
 
     // OpenAI APIリクエスト
