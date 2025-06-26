@@ -22,7 +22,7 @@ const CATEGORY_LABELS = [
 const STATUS_SELECT_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Watched', value: 'Watched' },
-  { label: 'Want to Watch', value: 'To Watch' },
+  { label: 'Want to Watch', value: 'Want to Watch' },
   { label: 'Watching', value: 'Watching' },
   { label: 'Favorite', value: 'Favorite' },
 ];
