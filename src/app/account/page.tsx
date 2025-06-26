@@ -18,7 +18,8 @@ export default async function AccountPage() {
   const [
     watchlistResult,
     watchedResult,
-    toWatchResult,
+    toWatchResult1,
+    toWatchResult2,
     watchingResult,
     favoritesResult,
     profileResult
@@ -38,7 +39,13 @@ export default async function AccountPage() {
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .in('status', ['To Watch', 'Want to Watch']),
+      .eq('status', 'To Watch'),
+
+    supabase
+      .from('watchlist_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'Want to Watch'),
 
     supabase
       .from('watchlist_items')
@@ -79,7 +86,7 @@ export default async function AccountPage() {
       counts={{
         watchlist: watchlistResult.count ?? 0,
         watched: watchedResult.count ?? 0,
-        toWatch: toWatchResult.count ?? 0,
+        toWatch: (toWatchResult1.count ?? 0) + (toWatchResult2.count ?? 0),
         watching: watchingResult.count ?? 0,
         favorites: favoritesResult.count ?? 0,
       }}
