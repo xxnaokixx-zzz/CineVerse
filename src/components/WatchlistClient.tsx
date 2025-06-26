@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 const STATUS_COLORS: Record<string, string> = {
   'Watched': 'bg-green-600',
+  'Want to Watch': 'bg-yellow-500',
   'To Watch': 'bg-yellow-500',
   'Watching': 'bg-blue-500',
   'Dropped': 'bg-red-600',

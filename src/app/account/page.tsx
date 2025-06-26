@@ -38,7 +38,7 @@ export default async function AccountPage() {
       .from('watchlist_items')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .eq('status', 'To Watch'),
+      .in('status', ['To Watch', 'Want to Watch']),
 
     supabase
       .from('watchlist_items')
