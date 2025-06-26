@@ -7,7 +7,7 @@ import { PersonDetails, PersonCombinedCredits, PersonExternalIds, PersonCredit, 
 import MovieCard from '@/components/MovieCard';
 import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare } from 'react-icons/fa';
 import AIAssistantButton from '@/components/AIAssistantButton';
-import AIAssistantModal from '@/components/AIAssistantModal';
+import { useRouter } from 'next/navigation';
 
 interface PersonClientPageProps {
   person: PersonDetails;
@@ -20,7 +20,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const [filmographyFilter, setFilmographyFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [showAll, setShowAll] = useState(false);
-  const [AIAssistantOpen, setAIAssistantOpen] = useState(false);
+  const router = useRouter();
 
   const filteredFilmography = (credits?.cast || [])
     .filter(credit => filmographyFilter === 'all' || credit.media_type === filmographyFilter)
@@ -86,7 +86,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    <AIAssistantButton onClick={() => setAIAssistantOpen(true)} />
+                    <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
                   </div>
                 </div>
               </div>
@@ -199,12 +199,6 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
           </div>
         </section>
       </div>
-      <AIAssistantModal
-        isOpen={AIAssistantOpen}
-        onClose={() => setAIAssistantOpen(false)}
-        title={person.name}
-        contextType="person"
-      />
     </>
   );
 } 

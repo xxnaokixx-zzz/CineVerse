@@ -13,11 +13,11 @@ const aiFeatures = [
   },
   {
     id: "summary",
-    name: "作品の要約（開発中）",
-    description: "作品の内容をAIが要約・解説",
+    name: "作品の要約・質問",
+    description: "作品の内容をAIが要約、質問にも回答",
     icon: FaFileAlt,
-    available: false,
-    href: "#"
+    available: true,
+    href: "/ai/summary"
   },
   {
     id: "review",

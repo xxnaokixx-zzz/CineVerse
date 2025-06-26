@@ -5,12 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, getMovieCredits, getSimilarMovies, getMovieVideos, getImageUrl, MovieDetails, Movie, Cast, Crew, Video } from '@/services/movieService';
 import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaUser, FaTv } from 'react-icons/fa';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
 import { createClient } from '@/lib/supabase/client';
 import AIAssistantButton from '@/components/AIAssistantButton';
-import AIAssistantModal from '@/components/AIAssistantModal';
 
 type PageProps = {
   params: Promise<{
@@ -40,6 +39,7 @@ const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
 export default function MovieDetailPage({ params }: PageProps) {
   const { id } = React.use(params) as { id: string };
+  const router = useRouter();
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [credits, setCredits] = useState<{ cast: Cast[], crew: Crew[] } | null>(null);
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
@@ -50,7 +50,6 @@ export default function MovieDetailPage({ params }: PageProps) {
   const [added, setAdded] = useState(false);
   const [vodProviders, setVodProviders] = useState<any[]>([]);
   const [vodModalOpen, setVodModalOpen] = useState(false);
-  const [AIAssistantOpen, setAIAssistantOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -179,7 +178,7 @@ export default function MovieDetailPage({ params }: PageProps) {
               <div className="text-white">
                 <h1 className="text-4xl lg:text-5xl font-bold mb-2">{movie.title}</h1>
                 <div className="mb-4">
-                  <AIAssistantButton onClick={() => setAIAssistantOpen(true)} />
+                  <AIAssistantButton onClick={() => router.push(`/ai/summary/movie/${movie.id}`)} />
                 </div>
                 <p className="text-lg text-gray-300 mb-4">{movie.tagline}</p>
                 <div className="flex items-center gap-4 text-gray-300 text-sm mb-4">
@@ -329,13 +328,6 @@ export default function MovieDetailPage({ params }: PageProps) {
           </div>
         </div>
       )}
-
-      <AIAssistantModal
-        isOpen={AIAssistantOpen}
-        onClose={() => setAIAssistantOpen(false)}
-        title={movie.title}
-        contextType="movie"
-      />
     </>
   );
 }

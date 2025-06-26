@@ -7,6 +7,7 @@ export interface Movie {
   backdrop_path: string;
   overview: string;
   vote_average: number;
+  vote_count: number;
   release_date: string;
   genre_ids?: number[];
   media_type?: 'movie';
@@ -90,6 +91,7 @@ export interface MovieDetails extends Movie {
   tagline: string;
   status: string;
   original_language: string;
+  vote_count: number;
 }
 
 export interface Cast {

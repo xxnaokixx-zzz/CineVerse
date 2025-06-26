@@ -6,10 +6,11 @@ import Link from 'next/link';
 import { getTVShowDetails, getTVShowCredits, getSimilarTVShows, getTVShowVideos, getImageUrl, TVShowDetails, TVShow, Cast, Crew, Video } from '@/services/movieService';
 import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaTv, FaUser } from 'react-icons/fa';
 import { FaRegUser } from 'react-icons/fa6';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
 import { createClient } from '@/lib/supabase/client';
+import AIAssistantButton from '@/components/AIAssistantButton';
 
 type PageProps = {
   params: Promise<{
@@ -46,6 +47,7 @@ export default function TVShowDetailPage({ params }: PageProps) {
   const [vodProviders, setVodProviders] = useState<any[]>([]);
   const [vodModalOpen, setVodModalOpen] = useState(false);
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
@@ -177,6 +179,9 @@ export default function TVShowDetailPage({ params }: PageProps) {
                   <span className="text-blue-400 text-sm">テレビ番組</span>
                 </div>
                 <h1 className="text-4xl lg:text-5xl font-bold mb-2">{tvShow.name}</h1>
+                <div className="mb-4">
+                  <AIAssistantButton onClick={() => router.push(`/ai/summary/tv/${tvShow.id}`)} />
+                </div>
                 <div className="flex items-center gap-4 text-gray-300 text-sm mb-4">
                   <div className="flex items-center gap-1 text-primary">
                     <FaStar />

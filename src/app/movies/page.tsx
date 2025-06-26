@@ -123,7 +123,7 @@ export default function AllMoviesPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">All Movies</h1>
+              <h1 className="text-3xl font-bold mb-6">映画一覧</h1>
               <p className="text-gray-400">
                 Discover thousands of movies from every genre
                 {totalResults > 0 && (
