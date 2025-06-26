@@ -29,8 +29,7 @@ export default function LoginClient() {
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
-        const redirectTo = getRedirectTo();
-        router.push(redirectTo);
+        window.location.reload();
       }
       if (event === 'SIGNED_OUT') {
         router.push('/login');
