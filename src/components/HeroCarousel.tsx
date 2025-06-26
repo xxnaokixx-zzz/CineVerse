@@ -89,7 +89,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
 
   return (
     <>
-      <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+      <section className="relative h-[600px] md:h-[700px] overflow-hidden">
         <div className="relative w-full h-full">
           {slides.map((slide, index) => (
             <div
@@ -100,7 +100,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                 src={getImageUrl(slide.backdrop_path, 'original')}
                 alt={slide.title}
                 fill
-                className="object-cover"
+                className="object-cover object-[center_-50%]"
                 priority={index === 0}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/70 to-transparent"></div>
