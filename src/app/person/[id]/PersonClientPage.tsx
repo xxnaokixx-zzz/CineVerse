@@ -66,6 +66,9 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                 </div>
                 <div className="flex-1">
                   <h1 className="text-3xl md:text-5xl font-bold mb-2">{person.name}</h1>
+                  <div className="mb-4">
+                    <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
+                  </div>
                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mb-4">
                     <span className="text-gray-300">{person.known_for_department}</span>
                     {person.birthday && <span className="text-gray-300">•</span>}
@@ -84,9 +87,6 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                       <span className="font-medium">{credits.cast.length || 0}</span>
                       <span className="text-gray-400 ml-1">Credits</span>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
                   </div>
                 </div>
               </div>

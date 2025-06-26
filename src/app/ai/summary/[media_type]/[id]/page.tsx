@@ -163,7 +163,7 @@ export default function AISummaryDetailPage() {
           )}
           {mode === 'question' && (
             <textarea
-              className="w-full border rounded p-3 text-white bg-gray-900 text-base placeholder:text-gray-400"
+              className="w-full border rounded p-3 text-black bg-white text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
               style={{ minWidth: '350px' }}
               rows={4}
               placeholder="質問を入力してください"

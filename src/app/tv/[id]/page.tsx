@@ -146,6 +146,17 @@ export default function TVShowDetailPage({ params }: PageProps) {
   const creator = credits?.crew.find((member: Crew) => member.job === 'Creator');
   const writers = credits?.crew.filter((member: Crew) => member.job === 'Writer' || member.job === 'Screenplay');
 
+  const tvYear = Number(tvShow.first_air_date?.substring(0, 4));
+  const tvGenreIds = tvShow.genres.map(g => g.id);
+  const filteredSimilarShows = similarShows.filter(sim => {
+    const simYear = Number(sim.first_air_date?.substring(0, 4));
+    const genreMatchCount = sim.genre_ids?.filter(id => tvGenreIds.includes(id)).length || 0;
+    return (
+      Math.abs(simYear - tvYear) <= 5 &&
+      genreMatchCount >= 1
+    );
+  });
+
   return (
     <>
       <main>
@@ -286,12 +297,12 @@ export default function TVShowDetailPage({ params }: PageProps) {
         </section>
 
         {/* Similar TV Shows Section */}
-        {similarShows && similarShows.length > 0 && (
+        {filteredSimilarShows.length > 0 && (
           <section className="py-12">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl font-bold mb-6 text-white">More Like This</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {similarShows.slice(0, 4).map((show) => (
+                {filteredSimilarShows.slice(0, 4).map((show) => (
                   <MovieCard
                     key={show.id}
                     id={show.id}

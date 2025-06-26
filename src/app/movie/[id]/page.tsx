@@ -148,6 +148,17 @@ export default function MovieDetailPage({ params }: PageProps) {
   const director = credits?.crew.find((member: Crew) => member.job === 'Director');
   const writers = credits?.crew.filter((member: Crew) => member.job === 'Writer' || member.job === 'Screenplay');
 
+  const movieYear = Number(movie.release_date?.substring(0, 4));
+  const movieGenreIds = movie.genres.map(g => g.id);
+  const filteredSimilarMovies = similarMovies.filter(sim => {
+    const simYear = Number(sim.release_date?.substring(0, 4));
+    const genreMatchCount = sim.genre_ids?.filter(id => movieGenreIds.includes(id)).length || 0;
+    return (
+      Math.abs(simYear - movieYear) <= 5 &&
+      genreMatchCount >= 1
+    );
+  });
+
   return (
     <>
       <main>
@@ -275,12 +286,12 @@ export default function MovieDetailPage({ params }: PageProps) {
         </section>
 
         {/* Similar Movies Section */}
-        {similarMovies && similarMovies.length > 0 && (
+        {filteredSimilarMovies.length > 0 && (
           <section className="py-12">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl font-bold mb-6 text-white">More Like This</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {similarMovies.slice(0, 4).map((movie) => (
+                {filteredSimilarMovies.slice(0, 4).map((movie) => (
                   <MovieCard
                     key={movie.id}
                     id={movie.id}
