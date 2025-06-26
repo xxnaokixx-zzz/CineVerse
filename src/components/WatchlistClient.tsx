@@ -130,7 +130,7 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     if (status === 'Favorite') {
       statusOk = !!favorites[item.id];
     } else if (status !== 'all') {
-      statusOk = normalizeStatus(item.status) === status;
+      statusOk = normalizeStatus(item.status) === normalizeStatus(status);
     }
     return catOk && statusOk;
   });
