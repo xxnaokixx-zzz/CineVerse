@@ -73,7 +73,7 @@ export default function AIPersonSummaryDetailPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="w-full max-w-2xl mx-auto pt-6 px-2">
         <button
-          onClick={() => router.push('/ai/summary')}
+          onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-300 hover:text-white font-bold mb-4"
         >
           <span className="text-xl">←</span> 戻る

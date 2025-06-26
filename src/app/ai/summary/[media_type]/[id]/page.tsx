@@ -82,7 +82,7 @@ export default function AISummaryDetailPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="w-full max-w-2xl mx-auto pt-6 px-2">
         <button
-          onClick={() => router.push('/ai/summary')}
+          onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-300 hover:text-white font-bold mb-4"
         >
           <span className="text-xl">←</span> 戻る
@@ -101,15 +101,15 @@ export default function AISummaryDetailPage() {
               />
             </Link>
           ) : (
-            <div className="relative w-40 h-60 mb-4">
+            <Link href={`/tv/${id}`} className="relative w-40 h-60 mb-4 block group">
               <Image
                 src={getImageUrl(media.poster_path)}
                 alt={(media as TVShowDetails).name}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-lg shadow-lg"
+                className="rounded-lg shadow-lg group-hover:opacity-90 cursor-pointer"
               />
-            </div>
+            </Link>
           )}
           <h1 className="text-2xl font-bold mb-2 text-center">{media_type === 'movie' ? (media as MovieDetails).title : (media as TVShowDetails).name}</h1>
           <div className="flex flex-col items-center gap-1 mb-4">
@@ -163,7 +163,7 @@ export default function AISummaryDetailPage() {
           )}
           {mode === 'question' && (
             <textarea
-              className="w-full border rounded p-3 text-gray-900 text-base placeholder:text-gray-400"
+              className="w-full border rounded p-3 text-white bg-gray-900 text-base placeholder:text-gray-400"
               style={{ minWidth: '350px' }}
               rows={4}
               placeholder="質問を入力してください"
