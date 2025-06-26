@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getTVShowDetails, getTVShowCredits, getSimilarTVShows, getTVShowVideos, getImageUrl, TVShowDetails, TVShow, Cast, Crew, Video } from '@/services/movieService';
+import { getTVShowDetails, getTVShowCredits, getSimilarTVShows, getTVShowVideos, getImageUrl, TVShowDetails, TVShow, Cast, Crew, Video, getTVShowKeywords, searchTVShows } from '@/services/movieService';
 import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaTv, FaUser } from 'react-icons/fa';
 import { FaRegUser } from 'react-icons/fa6';
 import { notFound, useRouter } from 'next/navigation';
@@ -46,6 +46,7 @@ export default function TVShowDetailPage({ params }: PageProps) {
   const [added, setAdded] = useState(false);
   const [vodProviders, setVodProviders] = useState<any[]>([]);
   const [vodModalOpen, setVodModalOpen] = useState(false);
+  const [seriesShows, setSeriesShows] = useState<TVShow[]>([]);
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const router = useRouter();
 
@@ -69,6 +70,19 @@ export default function TVShowDetailPage({ params }: PageProps) {
         setCredits(creditsData);
         setSimilarShows(similarShowsData);
         setVideos(videosData);
+
+        // タイトル先頭一致でシリーズ作品を抽出
+        if (tvShowData && tvShowData.name) {
+          const searchRes = await searchTVShows(tvShowData.name, 1);
+          const baseTitle = tvShowData.name;
+          const related = searchRes.results.filter(show =>
+            show.id !== tvShowData.id &&
+            (show.name.startsWith(baseTitle) || show.name.startsWith("ONE PIECE"))
+          );
+          setSeriesShows(related);
+        } else {
+          setSeriesShows([]);
+        }
 
         // VOD配信情報取得
         if (tvShowData && tvShowData.id) {
@@ -303,6 +317,28 @@ export default function TVShowDetailPage({ params }: PageProps) {
               <h2 className="text-2xl font-bold mb-6 text-white">More Like This</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {filteredSimilarShows.slice(0, 4).map((show) => (
+                  <MovieCard
+                    key={show.id}
+                    id={show.id}
+                    imageUrl={getImageUrl(show.poster_path)}
+                    title={show.name}
+                    rating={show.vote_average.toFixed(1)}
+                    year={new Date(show.first_air_date).getFullYear().toString()}
+                    mediaType="tv"
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* シリーズ作品セクション */}
+        {seriesShows.length > 0 && (
+          <section className="py-12">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl font-bold mb-6 text-white">シリーズ作品</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {seriesShows.slice(0, 8).map((show) => (
                   <MovieCard
                     key={show.id}
                     id={show.id}

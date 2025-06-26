@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getMovieDetails, getMovieCredits, getSimilarMovies, getMovieVideos, getImageUrl, MovieDetails, Movie, Cast, Crew, Video } from '@/services/movieService';
+import { getMovieDetails, getMovieCredits, getSimilarMovies, getMovieVideos, getImageUrl, MovieDetails, Movie, Cast, Crew, Video, getMovieCollection } from '@/services/movieService';
 import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaUser, FaTv } from 'react-icons/fa';
 import { notFound, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
@@ -50,6 +50,7 @@ export default function MovieDetailPage({ params }: PageProps) {
   const [added, setAdded] = useState(false);
   const [vodProviders, setVodProviders] = useState<any[]>([]);
   const [vodModalOpen, setVodModalOpen] = useState(false);
+  const [collectionMovies, setCollectionMovies] = useState<Movie[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -86,6 +87,20 @@ export default function MovieDetailPage({ params }: PageProps) {
           } catch (e) {
             setVodProviders([]);
           }
+        }
+
+        // コレクション（シリーズ）取得
+        if (movieData && movieData.belongs_to_collection?.id) {
+          try {
+            const collection = await getMovieCollection(movieData.belongs_to_collection.id);
+            // 今の作品自身は除外
+            const others = (collection.parts || []).filter((m: any) => m.id !== movieData.id);
+            setCollectionMovies(others);
+          } catch (e) {
+            setCollectionMovies([]);
+          }
+        } else {
+          setCollectionMovies([]);
         }
       } catch (error) {
         console.error("Failed to fetch movie details:", error);
@@ -286,12 +301,12 @@ export default function MovieDetailPage({ params }: PageProps) {
         </section>
 
         {/* Similar Movies Section */}
-        {filteredSimilarMovies.length > 0 && (
+        {collectionMovies.length > 0 && (
           <section className="py-12">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl font-bold mb-6 text-white">More Like This</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {filteredSimilarMovies.slice(0, 4).map((movie) => (
+              <h2 className="text-2xl font-bold mb-6 text-white">シリーズ作品</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {collectionMovies.slice(0, 4).map((movie) => (
                   <MovieCard
                     key={movie.id}
                     id={movie.id}

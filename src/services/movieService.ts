@@ -92,6 +92,12 @@ export interface MovieDetails extends Movie {
   status: string;
   original_language: string;
   vote_count: number;
+  belongs_to_collection?: {
+    id: number;
+    name: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+  };
 }
 
 export interface Cast {
@@ -305,4 +311,12 @@ export async function getPersonCombinedCredits(id: string): Promise<PersonCombin
 
 export async function getPersonExternalIds(id: string): Promise<PersonExternalIds> {
   return fetchFromTMDB<PersonExternalIds>(`/person/${id}/external_ids`);
+}
+
+export async function getMovieCollection(collectionId: number): Promise<any> {
+  return fetchFromTMDB<any>(`/collection/${collectionId}`);
+}
+
+export async function getTVShowKeywords(id: string): Promise<{ id: number; results: { id: number; name: string }[] }> {
+  return fetchFromTMDB<{ id: number; results: { id: number; name: string }[] }>(`/tv/${id}/keywords`);
 } 
