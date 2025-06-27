@@ -201,6 +201,9 @@ npm run dev
 
 ![アカウントページ](./public/images/CineVerse.accountpage.png)
 
+### トレイラー再生デモ：
+![トレイラー再生デモ](./public/images/trailer-demo.gif)
+
 ---
 
 ## 🛣️ 今後のロードマップ
