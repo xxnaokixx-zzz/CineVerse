@@ -106,24 +106,24 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/70 to-transparent"></div>
               <div className="absolute inset-0 flex items-end pb-12 md:pb-16">
                 <div className="container mx-auto px-4">
-                  <div className="max-w-2xl">
-                    <span className={`${getBadge(index).color} text-white px-2 py-1 text-sm rounded-md mb-2 inline-block`}>{getBadge(index).text}</span>
-                    <h1 className="text-4xl md:text-5xl font-bold mb-3">{slide.title}</h1>
-                    <div className="flex items-center space-x-4 mb-4">
+                  <div className="max-w-2xl bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 rounded-xl">
+                    <span className={`${getBadge(index).color} text-white px-2 py-1 text-sm rounded-md mb-2 inline-block drop-shadow-lg`}>{getBadge(index).text}</span>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{slide.title}</h1>
+                    <div className="flex items-center space-x-4 mb-4 text-white drop-shadow">
                       <span className="flex items-center"><FaStar className="text-yellow-400 mr-1" /> {slide.vote_average.toFixed(1)}/10</span>
                       <span>{slide.release_date.split('-')[0]}</span>
                     </div>
-                    <p className="text-gray-300 mb-6 line-clamp-3">{slide.overview}</p>
+                    <p className="text-gray-100 mb-6 line-clamp-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{slide.overview}</p>
                     <div className="flex flex-wrap gap-3">
                       {slide.trailer && (
                         <button
                           onClick={() => handleTrailerClick(slide.trailer!.key)}
-                          className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                          className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100 drop-shadow"
                         >
                           <FaPlay className="mr-2" /> Watch Trailer
                         </button>
                       )}
-                      <Link href={`/movie/${slide.id}`} className="bg-transparent border border-white hover:bg-white hover:text-dark transition-colors px-6 py-3 rounded-full flex items-center">
+                      <Link href={`/movie/${slide.id}`} className="bg-transparent border border-white hover:bg-white hover:text-dark transition-colors px-6 py-3 rounded-full flex items-center drop-shadow">
                         <FaInfoCircle className="mr-2" /> More Info
                       </Link>
                     </div>
