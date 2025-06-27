@@ -7,6 +7,9 @@ import { getAllDramas, getDramasByGenre, getTVGenres, TVShow, Genre, getImageUrl
 import { FaStar, FaPlay, FaPlus, FaInfo, FaChevronDown, FaThLarge, FaList, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import MovieCard from '@/components/MovieCard';
 
+// ドラマに関係あるジャンルIDリスト
+const DRAMA_GENRE_IDS = [18, 80, 9648, 10751, 10759, 10762, 10763, 10764, 10765, 10766, 10767, 10768];
+
 export default function AllDramaPage() {
   const [dramas, setDramas] = useState<TVShow[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -64,7 +67,8 @@ export default function AllDramaPage() {
   const loadGenres = async () => {
     try {
       const genresData = await getTVGenres();
-      setGenres(genresData);
+      // ドラマ向けジャンルだけにフィルタ
+      setGenres(genresData.filter(g => DRAMA_GENRE_IDS.includes(g.id)));
     } catch (error) {
       console.error('Failed to load genres:', error);
     }

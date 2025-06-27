@@ -7,6 +7,9 @@ import { getAllMovies, getMoviesByGenre, getGenres, Movie, Genre, getImageUrl } 
 import { FaStar, FaPlay, FaPlus, FaInfo, FaChevronDown, FaThLarge, FaList, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import MovieCard from '@/components/MovieCard';
 
+// 映画に関係あるジャンルIDリスト
+const MOVIE_GENRE_IDS = [28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878, 10770, 53, 10752, 37];
+
 export default function AllMoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -70,7 +73,8 @@ export default function AllMoviesPage() {
   const loadGenres = async () => {
     try {
       const genresData = await getGenres();
-      setGenres(genresData);
+      // 映画向けジャンルだけにフィルタ
+      setGenres(genresData.filter(g => MOVIE_GENRE_IDS.includes(g.id)));
     } catch (error) {
       console.error('Failed to load genres:', error);
     }
