@@ -144,4 +144,12 @@ npm run dev
 ![AI要約・質問3](./public/images/CineVerse.AI.summarypage3.png)
 ![AI要約・質問4](./public/images/CineVerse.AI.summarypage4.png)
 
+### ウォッチリストページ
+
+![ウォッチリストページ](./public/images/CineVerse.watchlist.page.png)
+
+### アカウントページ
+
+![アカウントページ](./public/images/CineVerse.accountpage.png)
+
 ---
