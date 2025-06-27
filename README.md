@@ -1,5 +1,13 @@
 # 🎬 CineVerse
 
+![Next.js](https://img.shields.io/badge/Next.js-15-blue)
+![Supabase](https://img.shields.io/badge/Supabase-backend-green)
+![OpenAI](https://img.shields.io/badge/OpenAI-API-orange)
+![MIT License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+## 🚀 デモ
+[CineVerseを体験する](https://cine-verse-ruddy.vercel.app)
+
 映画・アニメ・ドラマの情報を検索・発見できるWebアプリです。  
 AIによるおすすめ提案や要約機能も搭載し、ユーザーの好みに合わせた作品探しをサポートします。
 
