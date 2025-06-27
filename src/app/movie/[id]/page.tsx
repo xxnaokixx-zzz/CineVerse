@@ -250,14 +250,23 @@ export default function MovieDetailPage({ params }: PageProps) {
                       <FaPlay className="mr-2" /> Watch Trailer
                     </button>
                   )}
-                  <button
-                    className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100${added || adding ? ' opacity-60 cursor-not-allowed' : ''}`}
-                    onClick={handleAddToWatchlist}
-                    disabled={added || adding}
-                  >
-                    <FaBookmark className="mr-2" />
-                    {added ? 'Added' : adding ? 'Adding...' : 'Add to Watchlist'}
-                  </button>
+                  {added ? (
+                    <button
+                      className="bg-red-600 hover:bg-red-700 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-white"
+                      onClick={handleRemoveFromWatchlist}
+                      disabled={adding}
+                    >
+                      <FaBookmark className="mr-2" /> Remove from Watchlist
+                    </button>
+                  ) : (
+                    <button
+                      className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100${adding ? ' opacity-60 cursor-not-allowed' : ''}`}
+                      onClick={handleAddToWatchlist}
+                      disabled={adding}
+                    >
+                      <FaBookmark className="mr-2" /> {adding ? 'Adding...' : 'Add to Watchlist'}
+                    </button>
+                  )}
                   <button
                     className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
                     onClick={() => setVodModalOpen(true)}
