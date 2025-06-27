@@ -229,7 +229,6 @@ A. Supabaseの認証設定やメールアドレス・パスワードをご確認
 - 新機能は必ずIssueを立ててからPRを作成してください
 - コードはPrettier/TailwindのLintに準拠してください
 - ブランチ名は `feature/xxx` や `fix/xxx` など分かりやすく
-- レビューは原則2名以上で行います
 
 ---
 
@@ -253,10 +252,9 @@ A. Supabaseの認証設定やメールアドレス・パスワードをご確認
 ---
 
 ## 👤 開発者・運営者
-- Naoki Ogawa（xxnaokixx）
+- Naoki Kato（xxnaokixx）
 - [GitHub](https://github.com/xxnaokixx-zzz)
-- [Twitter](https://twitter.com/xxnaokixx)（例）
-- お問い合わせ: info@example.com
+- お問い合わせ: nao0423xx@gmail.com
 
 ---
 
@@ -333,15 +331,6 @@ CineVerseではOpenAI APIを活用し、以下のAI機能を実装していま�
 
 このプロジェクトが気に入ったら、ぜひGitHubでスター ⭐ をつけてください！  
 開発の励みになります 🙏
-
----
-
-## 👤 開発者
-
-- **Naoki Ogawa（xxnaokixx）**
-- 🔗 [GitHub @xxnaokixx-zzz](https://github.com/xxnaokixx-zzz)
-- 🐦 [Twitter（開発・技術アカウント）](https://twitter.com/xxnaokixx)
-- 📫 お問い合わせ: info[at]example.com
 
 ---
 
