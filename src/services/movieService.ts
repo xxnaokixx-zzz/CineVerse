@@ -225,21 +225,16 @@ export async function searchTVShows(query: string, page: number = 1): Promise<{ 
 export async function multiSearch(query: string, page: number = 1): Promise<{ results: MediaItem[], total_pages: number, total_results: number }> {
   const data = await fetchFromTMDB<MultiSearchResponse & { total_pages: number, total_results: number }>(`/search/multi?query=${encodeURIComponent(query)}&page=${page}`);
 
+  // デバッグ用: APIレスポンスのresultsを出力
+  console.log('multiSearch results:', data.results);
+
   // Filter out person results and transform to MediaItem format
   const mediaResults = data.results
-    .filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+    .filter(item => item.media_type === 'movie' || item.media_type === 'tv' || item.media_type === 'person')
     .map(item => ({
-      id: item.id,
+      ...item,
       title: item.title || item.name || '',
       name: item.name || item.title || '',
-      poster_path: item.poster_path,
-      backdrop_path: item.backdrop_path,
-      overview: item.overview,
-      vote_average: item.vote_average,
-      release_date: item.release_date || item.first_air_date || '',
-      first_air_date: item.first_air_date || item.release_date || '',
-      genre_ids: item.genre_ids,
-      media_type: item.media_type
     })) as MediaItem[];
 
   return {

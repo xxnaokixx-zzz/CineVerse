@@ -130,6 +130,8 @@ export default function AllDramaPage() {
               </p>
             </div>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
+              {/* ジャンル選択リストを一旦非表示に */}
+              {/*
               <div className="relative">
                 <select
                   value={selectedGenre}
@@ -143,8 +145,8 @@ export default function AllDramaPage() {
                     </option>
                   ))}
                 </select>
-                <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
+              */}
               <div className="relative">
                 <select
                   value={sortBy}

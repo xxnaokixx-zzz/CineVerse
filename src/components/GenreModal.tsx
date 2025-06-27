@@ -68,6 +68,13 @@ export default function GenreModal({ isOpen, onClose }: GenreModalProps) {
             <FaTimes className="text-xl" />
           </button>
         </div>
+        {/* 注意書き */}
+        <div className="px-6 pt-4 pb-0">
+          <div className="bg-yellow-100 text-yellow-800 text-sm rounded px-4 py-3 mb-2">
+            現在ジャンル選択機能はありません（ジャンル機能見直しのため）。<br />
+            ただし各ジャンルの一覧は閲覧できます。
+          </div>
+        </div>
 
         {/* ジャンルボタン */}
         <div className="p-6 space-y-4">

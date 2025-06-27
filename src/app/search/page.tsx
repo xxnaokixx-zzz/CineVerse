@@ -23,6 +23,8 @@ const SearchPage = () => {
   const [personWorksTarget, setPersonWorksTarget] = useState<any | null>(null);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isButtonHovered, setIsButtonHovered] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     getTrendingMovies().then(setTrending);
@@ -162,14 +164,28 @@ const SearchPage = () => {
               className="w-full px-4 py-2 rounded-md bg-darkgray text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
               autoComplete="off"
             />
-            <button
-              type="submit"
-              className="w-full mt-2 px-6 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-bold text-white border border-gray-600"
-              disabled={isLoading}
-              style={{ minWidth: 100 }}
+            <div className="relative"
+              onMouseEnter={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+              onFocus={() => setIsButtonHovered(true)}
+              onBlur={() => setIsButtonHovered(false)}
+              tabIndex={-1}
             >
-              {isLoading ? '検索中...' : '検索'}
-            </button>
+              <button
+                ref={buttonRef}
+                type="submit"
+                className={`w-full mt-2 px-6 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-bold text-white border border-gray-600 ${!query.trim() ? 'disabled:bg-gray-600 disabled:cursor-not-allowed pointer-events-none' : ''}`}
+                disabled={isLoading || !query.trim()}
+                style={{ minWidth: 100 }}
+              >
+                {isLoading ? '検索中...' : '検索'}
+              </button>
+              {isButtonHovered && !query.trim() && (
+                <div className="absolute left-1/2 -translate-x-1/2 mt-2 bg-red-600 text-white text-xs rounded px-3 py-2 shadow-lg z-20 whitespace-nowrap">
+                  検索欄に何も入力されていません
+                </div>
+              )}
+            </div>
             {/* サジェスト候補 */}
             {(searchType === 'person_works' || searchType === 'person_search') && suggestions.length > 0 && (
               <div className="absolute left-0 right-0 top-full mt-2 bg-darkgray border border-gray-700 rounded-b-md shadow-lg max-h-72 overflow-y-auto z-10">
@@ -232,7 +248,7 @@ const SearchPage = () => {
             <div className="text-center text-gray-400 col-span-full">検索中...</div>
           ) : searched && ((searchType === 'work' && results.length === 0) || (searchType === 'person_works' && personWorks.length === 0 && !personWorksTarget) || (searchType === 'person_search' && personCandidates.length === 0)) ? (
             <div className="text-gray-400 text-center col-span-full">
-              検索結果はありません<br />
+              検索結果がヒットしませんでした<br />
               <span className="text-xs text-gray-500">{searchType === 'person_works' && personWorksError ? personWorksError : searchType === 'person_search' && personWorksError ? personWorksError : '日本語名でヒットしない場合は、英語名やローマ字でもお試しください。'}</span>
             </div>
           ) : searchType === 'person_works' && personCandidates.length > 0 ? (

@@ -7,6 +7,9 @@ import { getAllTVShows, getTVShowsByGenre, getTVGenres, TVShow, Genre, getImageU
 import { FaStar, FaPlay, FaPlus, FaInfo, FaChevronDown, FaThLarge, FaList, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import MovieCard from '@/components/MovieCard';
 
+// アニメに関係あるジャンルIDリスト
+const ANIME_GENRE_IDS = [16, 28, 35, 10751, 14, 878]; // アニメーション, アクション, コメディ, ファミリー, ファンタジー, SF
+
 export default function AnimePageClient() {
   const [tvShows, setTVShows] = useState<TVShow[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -64,7 +67,9 @@ export default function AnimePageClient() {
   const loadGenres = async () => {
     try {
       const genresData = await getTVGenres();
-      setGenres(genresData);
+      // アニメ向けジャンルだけに日本語名で厳密フィルタ
+      const animeGenreNames = ['アニメーション', 'アクション', 'コメディ', 'ファミリー', 'ファンタジー', 'SF', 'サイエンスフィクション', '冒険'];
+      setGenres(genresData.filter(g => animeGenreNames.includes(g.name)));
     } catch (error) {
       console.error('Failed to load genres:', error);
     }
@@ -126,13 +131,14 @@ export default function AnimePageClient() {
               </p>
             </div>
             <div className="flex items-center space-x-4 mt-4 md:mt-0">
+              {/* ジャンル選択リストを一旦非表示に */}
+              {/*
               <div className="relative">
                 <select
                   value={selectedGenre}
                   onChange={(e) => handleGenreChange(e.target.value)}
                   className="bg-lightgray rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
                 >
-                  <option value="">All Genres</option>
                   {genres.map((genre) => (
                     <option key={genre.id} value={genre.name}>
                       {genre.name}
@@ -141,6 +147,7 @@ export default function AnimePageClient() {
                 </select>
                 <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
+              */}
               <div className="relative">
                 <select
                   value={sortBy}
