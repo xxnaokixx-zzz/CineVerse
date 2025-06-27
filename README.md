@@ -321,12 +321,22 @@ CineVerseではOpenAI APIを活用し、以下のAI機能を実装していま�
 
 ---
 
-## 🖼️ GIF・動画によるスクリーンショット例（任意）
+## 🖼️ GIF・動画によるスクリーンショット例
 
-- AIレコメンドの流れ例：
-  ![AIレコメンドフロー](./public/images/CineVerse.AI.recommendation-flow.gif)
-- ウォッチリスト追加の流れ例：
-  ![ウォッチリスト追加フロー](./public/images/CineVerse.watchlist-flow.gif)
+- AIおすすめ機能の流れ：
+  ![AIおすすめ機能](./public/images/ai-recommendation.gif)
+- AI要約・質問応答の体験：
+  ![AI要約・質問応答](./public/images/ai-summary.gif)
+- ウォッチリスト追加・削除の流れ：
+  ![ウォッチリスト追加・削除](./public/images/watchlist-flow.gif)
+- 検索機能の体験：
+  ![検索機能](./public/images/search-flow.gif)
+- アカウント作成・ログインの流れ（Google認証）：
+  ![Googleログイン](./public/images/login-google.gif)
+- アカウント作成・ログインの流れ（GitHub認証）：
+  ![GitHubログイン](./public/images/login-github.gif)
+- VODボタンから配信サービス一覧を表示：
+  ![VOD配信サービス一覧](./public/images/vod-flow.gif)
 
 ---
 
