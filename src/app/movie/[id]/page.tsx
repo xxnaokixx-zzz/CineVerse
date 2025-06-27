@@ -197,16 +197,16 @@ export default function MovieDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <main>
+      <main className="pt-0">
         {/* Hero Section */}
-        <section className="relative h-[60vh] min-h-[500px] md:h-[75vh] md:min-h-[600px] -mt-20">
+        <section className="relative h-[600px] md:h-[700px] overflow-hidden -mt-20">
           <div className="absolute inset-0">
             <Image
               src={getImageUrl(movie.backdrop_path, 'original')}
               alt={`Backdrop for ${movie.title}`}
               layout="fill"
               objectFit="cover"
-              className="opacity-40"
+              className="opacity-40 object-[center_-50%]"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
@@ -257,12 +257,6 @@ export default function MovieDetailPage({ params }: PageProps) {
                   >
                     <FaBookmark className="mr-2" />
                     {adding ? (added ? 'Removing...' : 'Adding...') : (added ? 'Added' : 'Add to Watchlist')}
-                  </button>
-                  <button
-                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
-                    onClick={() => setVodModalOpen(true)}
-                  >
-                    <FaTv className="mr-2" /> VOD
                   </button>
                 </div>
               </div>

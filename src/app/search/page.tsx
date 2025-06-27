@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import TrendingSection from "@/components/TrendingSection";
 import { getTrendingMovies, Movie, multiSearch, getImageUrl } from "@/services/movieService";
 import type { MediaItem } from '@/services/movieService';
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function SearchPage() {
+const SearchPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
@@ -79,7 +79,9 @@ export default function SearchPage() {
 
         {/* 検索結果表示 */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
-          {searched && !isLoading && results.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center text-gray-400 col-span-full">検索中...</div>
+          ) : searched && results.length === 0 ? (
             <div className="text-gray-400 text-center col-span-full">検索結果はありません</div>
           ) : (
             results.map((item, idx) => (
@@ -99,5 +101,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function SearchPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchPage />
+    </Suspense>
   );
 } 

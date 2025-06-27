@@ -175,14 +175,14 @@ export default function TVShowDetailPage({ params }: PageProps) {
     <>
       <main>
         {/* Hero Section */}
-        <section className="relative h-[60vh] min-h-[500px] md:h-[75vh] md:min-h-[600px] -mt-20">
+        <section className="relative h-[600px] md:h-[700px] overflow-hidden -mt-20">
           <div className="absolute inset-0">
             <Image
               src={getImageUrl(tvShow.backdrop_path, 'original')}
               alt={`Backdrop for ${tvShow.name}`}
               layout="fill"
               objectFit="cover"
-              className="opacity-40"
+              className="opacity-40 object-[center_-50%]"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
@@ -311,26 +311,7 @@ export default function TVShowDetailPage({ params }: PageProps) {
         </section>
 
         {/* Similar TV Shows Section */}
-        {filteredSimilarShows.length > 0 && (
-          <section className="py-12">
-            <div className="container mx-auto px-4">
-              <h2 className="text-2xl font-bold mb-6 text-white">More Like This</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {filteredSimilarShows.slice(0, 4).map((show) => (
-                  <MovieCard
-                    key={show.id}
-                    id={show.id}
-                    imageUrl={getImageUrl(show.poster_path)}
-                    title={show.name}
-                    rating={show.vote_average.toFixed(1)}
-                    year={new Date(show.first_air_date).getFullYear().toString()}
-                    mediaType="tv"
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* このセクションを削除 */}
 
         {/* シリーズ作品セクション */}
         {seriesShows.length > 0 && (
