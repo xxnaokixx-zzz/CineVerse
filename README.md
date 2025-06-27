@@ -252,7 +252,7 @@ A. OpenAIの仕様上、まれに意図しない回答が返ることがあり�
 - [Supabase](https://supabase.com/)（認証・DB）
 - [OpenAI API](https://openai.com/)（AI要約・レコメンド）
 - [Vercel](https://vercel.com/)（デプロイ）
-- 各種OSS・デザインリソース
+- 各種OSS・デザインリソース（特にUX Pilotを参考）
 
 ---
 
