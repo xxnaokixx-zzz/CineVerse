@@ -61,8 +61,10 @@ export async function getMovieRecommendations(request: MovieRecommendationReques
           const searchResult = await multiSearch(title, 1);
           if (searchResult.results.length > 0) {
             // 評価が最も高いものを選ぶ
-            const sorted = searchResult.results.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
-            const movie = sorted[0];
+            const sorted = searchResult.results
+              .filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
+              .sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0));
+            const movie = sorted[0] as Movie | TVShow;
             return {
               id: movie.id,
               title: 'title' in movie ? movie.title : (movie as any).name || title,
