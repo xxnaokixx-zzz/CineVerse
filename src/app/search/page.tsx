@@ -2,23 +2,47 @@
 
 import { useState, useEffect } from "react";
 import TrendingSection from "@/components/TrendingSection";
-import { getTrendingMovies, Movie } from "@/services/movieService";
+import { getTrendingMovies, Movie, multiSearch, getImageUrl } from "@/services/movieService";
+import type { MediaItem } from '@/services/movieService';
+import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialQuery = searchParams.get('q') || '';
+  const [query, setQuery] = useState(initialQuery);
+  const [results, setResults] = useState<MediaItem[]>([]);
   const [searched, setSearched] = useState(false);
   const [trending, setTrending] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     getTrendingMovies().then(setTrending);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // 検索ロジックは後で実装
-    setResults([]);
-    setSearched(true);
+  useEffect(() => {
+    if (initialQuery) {
+      handleSearch(undefined, initialQuery);
+    }
+    // eslint-disable-next-line
+  }, [initialQuery]);
+
+  const handleSearch = async (e?: React.FormEvent, overrideQuery?: string) => {
+    if (e) e.preventDefault();
+    const searchTerm = overrideQuery !== undefined ? overrideQuery : query;
+    if (!searchTerm.trim()) return;
+    setIsLoading(true);
+    setSearched(false);
+    try {
+      const data = await multiSearch(searchTerm.trim());
+      setResults(data.results);
+    } catch (err) {
+      setResults([]);
+    } finally {
+      setSearched(true);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,23 +64,36 @@ export default function SearchPage() {
           <button
             type="submit"
             className="w-full max-w-lg px-6 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-bold"
+            disabled={isLoading}
           >
-            検索
+            {isLoading ? '検索中...' : '検索'}
           </button>
         </form>
 
         {/* Trending Nowセクション */}
-        <div className="w-full max-w-4xl mx-auto">
-          <TrendingSection movies={trending} />
-        </div>
+        {!searched && (
+          <div className="w-full max-w-4xl mx-auto">
+            <TrendingSection movies={trending} />
+          </div>
+        )}
 
-        {/* 検索結果プレースホルダー */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {searched && results.length === 0 ? (
+        {/* 検索結果表示 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
+          {searched && !isLoading && results.length === 0 ? (
             <div className="text-gray-400 text-center col-span-full">検索結果はありません</div>
           ) : (
             results.map((item, idx) => (
-              <div key={idx} className="bg-darkgray rounded-lg p-4">{item}</div>
+              <Link key={item.id} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
+                <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
+                  {item.poster_path ? (
+                    <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
+                  )}
+                </div>
+                <div className="text-white text-sm font-semibold text-center truncate w-full">{item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''}</div>
+                <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
+              </Link>
             ))
           )}
         </div>
