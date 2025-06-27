@@ -161,3 +161,68 @@ npm run dev
 ![アカウントページ](./public/images/CineVerse.accountpage.png)
 
 ---
+
+## 🛣️ 今後のロードマップ
+- レビュー自動生成機能の正式リリース
+- モバイルUIのさらなる最適化
+- 国際化（i18n）対応の拡充
+- ダーク/ライトテーマ切り替え
+- おすすめAIの精度向上
+
+---
+
+## ❓ FAQ（よくある質問）
+
+**Q. AI機能が動かない/エラーになる**  
+A. OpenAI APIキーやSupabaseの設定が正しいかご確認ください。APIの無料枠制限にもご注意ください。
+
+**Q. 画像が表示されない**  
+A. TMDb APIの画像URLやネットワーク環境をご確認ください。
+
+**Q. ログインできない/認証エラー**  
+A. Supabaseの認証設定やメールアドレス・パスワードをご確認ください。
+
+---
+
+## 📝 コントリビューションガイド
+- 新機能は必ずIssueを立ててからPRを作成してください
+- コードはPrettier/TailwindのLintに準拠してください
+- ブランチ名は `feature/xxx` や `fix/xxx` など分かりやすく
+- レビューは原則2名以上で行います
+
+---
+
+## 🙏 クレジット・謝辞
+- [TMDb API](https://www.themoviedb.org/)（映画・アニメ・ドラマ情報）
+- [Supabase](https://supabase.com/)（認証・DB）
+- [OpenAI API](https://openai.com/)（AI要約・レコメンド）
+- [Vercel](https://vercel.com/)（デプロイ）
+- 各種OSS・デザインリソース
+
+---
+
+## 🖼️ スクリーンショットの説明
+- トップページ：ヒーロー画像・トレンド作品・検索フォーム
+- 検索結果ページ：横断検索結果の表示
+- 作品詳細ページ：映画・アニメの詳細情報、VOD配信情報
+- AI機能ページ：AIによるおすすめ・要約・質問応答
+- ウォッチリストページ：お気に入り作品の管理
+- アカウントページ：プロフィール編集・削除
+
+---
+
+## 👤 開発者・運営者
+- Naoki Ogawa（xxnaokixx）
+- [GitHub](https://github.com/xxnaokixx-zzz)
+- [Twitter](https://twitter.com/xxnaokixx)（例）
+- お問い合わせ: info@example.com
+
+---
+
+## 🗒️ バージョン情報・更新履歴
+- v1.0.0: 初期リリース
+- v1.1.0: AI要約・レコメンド機能追加
+- v1.2.0: UI/UX大幅改善・スクリーンショット追加
+- v1.3.0: README充実化・バッジ/デモリンク追加
+
+---
