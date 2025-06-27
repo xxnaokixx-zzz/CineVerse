@@ -118,7 +118,7 @@ export default function AIPersonSummaryDetailPage() {
         <form onSubmit={handleSubmit} className="w-full max-w-2xl flex flex-col items-center gap-4 mb-8">
           {mode === 'question' && (
             <textarea
-              className="w-full border rounded p-3 text-gray-900 text-base placeholder:text-gray-400"
+              className="w-full border rounded p-3 text-black bg-white dark:bg-white text-base placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white"
               style={{ minWidth: '350px' }}
               rows={4}
               placeholder="質問を入力してください"
