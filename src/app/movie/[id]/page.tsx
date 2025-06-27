@@ -252,11 +252,17 @@ export default function MovieDetailPage({ params }: PageProps) {
                   )}
                   <button
                     className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100${added || adding ? ' opacity-60 cursor-not-allowed' : ''}`}
-                    onClick={added ? handleRemoveFromWatchlist : handleAddToWatchlist}
-                    disabled={adding}
+                    onClick={handleAddToWatchlist}
+                    disabled={added || adding}
                   >
                     <FaBookmark className="mr-2" />
-                    {adding ? (added ? 'Removing...' : 'Adding...') : (added ? 'Added' : 'Add to Watchlist')}
+                    {added ? 'Added' : adding ? 'Adding...' : 'Add to Watchlist'}
+                  </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    onClick={() => setVodModalOpen(true)}
+                  >
+                    <FaTv className="mr-2" /> VOD
                   </button>
                 </div>
               </div>

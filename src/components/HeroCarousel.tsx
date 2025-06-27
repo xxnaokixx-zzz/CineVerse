@@ -106,7 +106,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/70 to-transparent"></div>
               <div className="absolute inset-0 flex items-end pb-12 md:pb-16">
                 <div className="container mx-auto px-4">
-                  <div className="max-w-2xl bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 rounded-xl">
+                  <div className="w-full bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 md:p-12 rounded-none">
                     <span className={`${getBadge(index).color} text-white px-2 py-1 text-sm rounded-md mb-2 inline-block drop-shadow-lg`}>{getBadge(index).text}</span>
                     <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{slide.title}</h1>
                     <div className="flex items-center space-x-4 mb-4 text-white drop-shadow">
