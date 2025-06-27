@@ -76,7 +76,15 @@ export interface PersonExternalIds {
   imdb_id: string | null;
 }
 
-export type MediaItem = Movie | TVShow;
+export interface PersonResult {
+  id: number;
+  name: string;
+  profile_path: string | null;
+  media_type: 'person';
+  known_for?: Array<Movie | TVShow>;
+}
+
+export type MediaItem = Movie | TVShow | PersonResult;
 
 export interface Genre {
   id: number;
