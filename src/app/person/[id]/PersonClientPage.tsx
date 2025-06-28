@@ -7,7 +7,7 @@ import { PersonDetails, PersonCombinedCredits, PersonExternalIds, PersonCredit, 
 import MovieCard from '@/components/MovieCard';
 import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare } from 'react-icons/fa';
 import AIAssistantButton from '@/components/AIAssistantButton';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface PersonClientPageProps {
   person: PersonDetails;
@@ -18,11 +18,22 @@ interface PersonClientPageProps {
 
 export default function PersonClientPage({ person, credits, externalIds, knownFor }: PersonClientPageProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('role') === 'director' ? 'director' : 'cast';
+  const [filmographyTab, setFilmographyTab] = useState<'cast' | 'director' | 'crew'>(initialTab);
   const [filmographyFilter, setFilmographyFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
 
-  const filteredFilmography = (credits?.cast || [])
+  let filmographyList: PersonCredit[] = [];
+  if (filmographyTab === 'cast') {
+    filmographyList = credits?.cast || [];
+  } else if (filmographyTab === 'director') {
+    filmographyList = (credits?.crew || []).filter(c => c.job === 'Director');
+  } else if (filmographyTab === 'crew') {
+    filmographyList = (credits?.crew || []).filter(c => c.job !== 'Director');
+  }
+  const filteredFilmography = filmographyList
     .filter(credit => filmographyFilter === 'all' || credit.media_type === filmographyFilter)
     .sort((a, b) => {
       const dateA = new Date(a.release_date || a.first_air_date || 0).getTime();
@@ -131,6 +142,11 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-bold">フィルモグラフィー</h2>
                     <div className="flex gap-2">
+                      <button onClick={() => setFilmographyTab('cast')} className={`${filmographyTab === 'cast' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>出演作</button>
+                      <button onClick={() => setFilmographyTab('director')} className={`${filmographyTab === 'director' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>監督作</button>
+                      <button onClick={() => setFilmographyTab('crew')} className={`${filmographyTab === 'crew' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>その他スタッフ作</button>
+                    </div>
+                    <div className="flex gap-2">
                       <button onClick={() => setFilmographyFilter('all')} className={`${filmographyFilter === 'all' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>すべて</button>
                       <button onClick={() => setFilmographyFilter('movie')} className={`${filmographyFilter === 'movie' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>映画</button>
                       <button onClick={() => setFilmographyFilter('tv')} className={`${filmographyFilter === 'tv' ? 'bg-primary text-white' : 'bg-lightgray text-gray-300 hover:bg-gray-600'} px-3 py-1 rounded-md text-sm transition-colors`}>テレビ</button>
@@ -138,7 +154,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   </div>
                   <div className="space-y-4">
                     {(showAll ? filteredFilmography : filteredFilmography.slice(0, 10)).map((credit) => (
-                      <Link key={`${credit.id}-${credit.character}`} href={`/${credit.media_type}/${credit.id}`}>
+                      <Link key={`${credit.id}-${credit.job || credit.character || ''}`} href={`/${credit.media_type}/${credit.id}`}>
                         <div className="flex items-center gap-4 p-4 bg-darkgray rounded-lg hover:bg-lightgray transition-colors cursor-pointer">
                           <div className="w-16 h-20 rounded overflow-hidden flex-shrink-0 bg-lightgray flex items-center justify-center">
                             {credit.poster_path ? (
@@ -149,6 +165,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                           </div>
                           <div className="flex-1">
                             <h3 className="font-semibold">{credit.title || credit.name}</h3>
+                            {credit.job && <p className="text-gray-400 text-sm">{credit.job}</p>}
                             <p className="text-gray-400 text-sm">{credit.character}</p>
                             <div className="flex items-center gap-4 mt-1">
                               <span className="text-sm text-gray-300">{(credit.release_date || credit.first_air_date) ? new Date(credit.release_date || credit.first_air_date || '').getFullYear() : 'N/A'}</span>

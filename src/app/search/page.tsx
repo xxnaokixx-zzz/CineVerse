@@ -6,6 +6,7 @@ import { getTrendingMovies, Movie, multiSearch, getImageUrl, TVShow } from "@/se
 import type { MediaItem } from '@/services/movieService';
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import SearchResultModal from '@/components/SearchResultModal';
 
 const SearchPage = () => {
   const searchParams = useSearchParams();
@@ -17,9 +18,7 @@ const SearchPage = () => {
   const [searched, setSearched] = useState(false);
   const [trending, setTrending] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchType, setSearchType] = useState<'work' | 'person_works' | 'person_search'>(
-    initialType || 'work'
-  );
+  const [searchType, setSearchType] = useState<'work' | 'person_works' | 'person_search' | 'director_works'>('work');
   const [personWorks, setPersonWorks] = useState<MediaItem[]>([]);
   const [personWorksError, setPersonWorksError] = useState('');
   const [personCandidates, setPersonCandidates] = useState<any[]>([]);
@@ -28,6 +27,7 @@ const SearchPage = () => {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     getTrendingMovies().then(setTrending);
@@ -55,25 +55,25 @@ const SearchPage = () => {
     setSearched(false);
     setPersonWorks([]);
     setPersonWorksError('');
+    setIsModalOpen(true);
     try {
       if (searchType === 'work') {
         const data = await multiSearch(searchTerm.trim());
         setResults(data.results);
       } else if (searchType === 'person_works') {
-        // 出演作品検索: 人物名で検索→候補リスト表示 or 1件なら自動で出演作一覧
         const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);
         const personData = await personRes.json();
         if (personData.results && personData.results.length > 0) {
           if (personData.results.length === 1) {
             const person = personData.results[0];
             setPersonWorksTarget(person);
-            // 出演作取得
+            // 出演作のみ取得
             const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
             const creditsData = await creditsRes.json();
-            const works = [...(creditsData.cast || []), ...(creditsData.crew || [])]
-              .filter((item, idx, arr) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
-              .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
-            setPersonWorks(works);
+            const castWorks = (creditsData.cast || [])
+              .filter((item: any, idx: number, arr: any[]) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
+              .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0));
+            setPersonWorks(castWorks);
             setPersonCandidates([]);
             setPersonWorksError('');
           } else {
@@ -105,6 +105,35 @@ const SearchPage = () => {
           setPersonCandidates([]);
           setPersonWorksError('該当する人物が見つかりませんでした');
         }
+      } else if (searchType === 'director_works') {
+        // 監督作品検索: 人物名で検索→crewからjob==='Director'のみ抽出
+        const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);
+        const personData = await personRes.json();
+        if (personData.results && personData.results.length > 0) {
+          if (personData.results.length === 1) {
+            const person = personData.results[0];
+            setPersonWorksTarget(person);
+            // 監督作のみ取得
+            const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
+            const creditsData = await creditsRes.json();
+            const directorWorks = (creditsData.crew || []).filter((item: any) => item.job === 'Director' && item.poster_path)
+              .filter((item: any, idx: number, arr: any[]) => arr.findIndex(x => x.id === item.id) === idx)
+              .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0));
+            setPersonWorks(directorWorks);
+            setPersonCandidates([]);
+            setPersonWorksError('');
+          } else {
+            setPersonCandidates(personData.results);
+            setPersonWorksTarget(null);
+            setPersonWorks([]);
+            setPersonWorksError('');
+          }
+        } else {
+          setPersonCandidates([]);
+          setPersonWorksTarget(null);
+          setPersonWorks([]);
+          setPersonWorksError('該当する人物が見つかりませんでした');
+        }
       }
     } catch (err) {
       setResults([]);
@@ -119,19 +148,22 @@ const SearchPage = () => {
   // 入力時のサジェスト取得
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
-    if (searchType === 'person_works' || searchType === 'person_search') {
-      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-      const value = e.target.value.trim();
-      if (!value) {
-        setSuggestions([]);
-        return;
-      }
-      debounceTimeout.current = setTimeout(async () => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    const value = e.target.value.trim();
+    if (!value) {
+      setSuggestions([]);
+      return;
+    }
+    debounceTimeout.current = setTimeout(async () => {
+      if (searchType === 'person_works' || searchType === 'person_search' || searchType === 'director_works') {
         const res = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(value)}&language=ja-JP`);
         const data = await res.json();
         setSuggestions(data.results || []);
-      }, 300);
-    }
+      } else if (searchType === 'work') {
+        const data = await multiSearch(value);
+        setSuggestions(data.results || []);
+      }
+    }, 300);
   };
 
   return (
@@ -146,21 +178,51 @@ const SearchPage = () => {
         <div className="flex justify-center gap-4 mb-6">
           <button
             className={`px-4 py-2 rounded-t-md font-bold border-b-2 ${searchType === 'work' ? 'border-primary text-primary' : 'border-transparent text-gray-400'}`}
-            onClick={() => setSearchType('work')}
+            onClick={() => {
+              setSearchType('work');
+              setQuery('');
+              setPersonWorks([]);
+              setPersonWorksTarget(null);
+              setPersonCandidates([]);
+              setPersonWorksError('');
+              setResults([]);
+              setSearched(false);
+              setSuggestions([]);
+            }}
           >
             作品検索
           </button>
           <button
             className={`px-4 py-2 rounded-t-md font-bold border-b-2 ${searchType === 'person_works' ? 'border-primary text-primary' : 'border-transparent text-gray-400'}`}
-            onClick={() => setSearchType('person_works')}
+            onClick={() => {
+              setSearchType('person_works');
+              setQuery('');
+              setPersonWorks([]);
+              setPersonWorksTarget(null);
+              setPersonCandidates([]);
+              setPersonWorksError('');
+              setResults([]);
+              setSearched(false);
+              setSuggestions([]);
+            }}
           >
             出演作品検索
           </button>
           <button
-            className={`px-4 py-2 rounded-t-md font-bold border-b-2 ${searchType === 'person_search' ? 'border-primary text-primary' : 'border-transparent text-gray-400'}`}
-            onClick={() => setSearchType('person_search')}
+            className={`px-4 py-2 rounded-t-md font-bold border-b-2 ${searchType === 'director_works' ? 'border-primary text-primary' : 'border-transparent text-gray-400'}`}
+            onClick={() => {
+              setSearchType('director_works');
+              setQuery('');
+              setPersonWorks([]);
+              setPersonWorksTarget(null);
+              setPersonCandidates([]);
+              setPersonWorksError('');
+              setResults([]);
+              setSearched(false);
+              setSuggestions([]);
+            }}
           >
-            出演者検索
+            監督作品検索
           </button>
         </div>
 
@@ -197,49 +259,106 @@ const SearchPage = () => {
               )}
             </div>
             {/* サジェスト候補 */}
-            {(searchType === 'person_works' || searchType === 'person_search') && suggestions.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-darkgray border border-gray-700 rounded-b-md shadow-lg max-h-72 overflow-y-auto z-10">
-                {suggestions.map((person) => (
-                  <button
-                    key={person.id}
-                    type="button"
-                    onClick={async () => {
-                      setQuery(person.name);
-                      setSuggestions([]);
-                      setIsLoading(true);
-                      if (searchType === 'person_works') {
-                        setPersonWorksTarget(person);
-                        // 出演作取得
-                        const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
-                        const creditsData = await creditsRes.json();
-                        const works = [...(creditsData.cast || []), ...(creditsData.crew || [])]
-                          .filter((item, idx, arr) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
-                          .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
-                        setPersonWorks(works);
-                        setIsLoading(false);
-                      } else if (searchType === 'person_search') {
-                        router.push(`/person/${person.id}`);
-                      }
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2 transition-colors border-b border-gray-700 last:border-b-0 hover:bg-primary/20 focus:bg-primary/20"
-                  >
-                    <div className="w-10 h-14 rounded overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
-                      {person.profile_path ? (
-                        <img src={getImageUrl(person.profile_path)} alt={person.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs text-gray-400">No Image</span>
-                      )}
-                    </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="font-semibold text-white truncate">{person.name}</div>
-                      {person.known_for && Array.isArray(person.known_for) && person.known_for.length > 0 && (
-                        <div className="text-xs text-gray-300 truncate whitespace-normal">
-                          代表作: {person.known_for.slice(0, 2).map((work: any) => work.title || work.name).join(', ')}
+            {suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 top-full mt-2 bg-black bg-opacity-90 border border-gray-700 rounded-b-md shadow-lg max-h-72 overflow-y-auto z-10">
+                {searchType === 'work' ? (
+                  // 作品検索のサジェスト
+                  suggestions.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={async () => {
+                        setQuery(item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : item.name);
+                        setSuggestions([]);
+                        setIsLoading(true);
+                        try {
+                          const data = await multiSearch(item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : item.name);
+                          setResults(data.results);
+                        } catch (e) {
+                          // 必要ならエラー表示
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2 transition-colors border-b border-gray-700 last:border-b-0 hover:bg-primary/20 focus:bg-primary/20"
+                    >
+                      <div className="w-10 h-14 rounded overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
+                        {item.poster_path ? (
+                          <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xs text-gray-400">No Image</span>
+                        )}
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-semibold text-white truncate">
+                          {item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : item.name}
                         </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                        <div className="text-xs text-gray-300 truncate">
+                          {item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : item.media_type === 'person' ? '人物' : ''}
+                          {item.media_type === 'movie' && item.release_date && ` • ${new Date(item.release_date).getFullYear()}`}
+                          {item.media_type === 'tv' && item.first_air_date && ` • ${new Date(item.first_air_date).getFullYear()}`}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  // 人物検索のサジェスト
+                  suggestions.map((person) => (
+                    <button
+                      key={person.id}
+                      type="button"
+                      onClick={async () => {
+                        setQuery(person.name);
+                        setSuggestions([]);
+                        setIsLoading(true);
+                        try {
+                          if (searchType === 'person_works') {
+                            setPersonWorksTarget(person);
+                            // 出演作取得
+                            const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
+                            const creditsData = await creditsRes.json();
+                            const castWorks = (creditsData.cast || [])
+                              .filter((item: any, idx: number, arr: any[]) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
+                              .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0));
+                            setPersonWorks(castWorks);
+                          } else if (searchType === 'director_works') {
+                            setPersonWorksTarget(person);
+                            // 監督作のみ取得
+                            const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
+                            const creditsData = await creditsRes.json();
+                            const directorWorks = (creditsData.crew || []).filter((item: any) => item.job === 'Director' && item.poster_path)
+                              .filter((item: any, idx: number, arr: any[]) => arr.findIndex(x => x.id === item.id) === idx)
+                              .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0));
+                            setPersonWorks(directorWorks);
+                          } else if (searchType === 'person_search') {
+                            router.push(`/person/${person.id}`);
+                          }
+                        } catch (e) {
+                          // 必要ならエラー表示
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2 transition-colors border-b border-gray-700 last:border-b-0 hover:bg-primary/20 focus:bg-primary/20"
+                    >
+                      <div className="w-10 h-14 rounded overflow-hidden flex-shrink-0 bg-gray-800 flex items-center justify-center">
+                        {person.profile_path ? (
+                          <img src={getImageUrl(person.profile_path)} alt={person.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-xs text-gray-400">No Image</span>
+                        )}
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-semibold text-white truncate">{person.name}</div>
+                        {person.known_for && Array.isArray(person.known_for) && person.known_for.length > 0 && (
+                          <div className="text-xs text-gray-300 truncate whitespace-normal">
+                            代表作: {person.known_for.slice(0, 2).map((work: any) => work.title || work.name).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -252,112 +371,15 @@ const SearchPage = () => {
           </div>
         )}
 
-        {/* 検索結果表示 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
-          {isLoading ? (
-            <div className="text-center text-gray-400 col-span-full">検索中...</div>
-          ) : searched && ((searchType === 'work' && results.length === 0) || (searchType === 'person_works' && personWorks.length === 0 && !personWorksTarget) || (searchType === 'person_search' && personCandidates.length === 0)) ? (
-            <div className="text-gray-400 text-center col-span-full">
-              検索結果がヒットしませんでした<br />
-              <span className="text-xs text-gray-500">{searchType === 'person_works' && personWorksError ? personWorksError : searchType === 'person_search' && personWorksError ? personWorksError : '日本語名でヒットしない場合は、英語名やローマ字でもお試しください。'}</span>
-            </div>
-          ) : searchType === 'person_works' && personCandidates.length > 0 ? (
-            personCandidates.map((person) => (
-              <button key={person.id} onClick={async () => {
-                setIsLoading(true);
-                setPersonWorksTarget(person);
-                // 出演作取得
-                const creditsRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=ja-JP`);
-                const creditsData = await creditsRes.json();
-                const works = [...(creditsData.cast || []), ...(creditsData.crew || [])]
-                  .filter((item, idx, arr) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
-                  .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
-                setPersonWorks(works);
-                setIsLoading(false);
-              }} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors w-full">
-                <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                  {person.profile_path ? (
-                    <img src={getImageUrl(person.profile_path)} alt={person.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
-                  )}
-                </div>
-                <div className="text-white text-sm font-semibold text-center truncate w-full">{person.name}</div>
-                {/* 代表作（known_for）があれば表示 */}
-                {person.known_for && Array.isArray(person.known_for) && person.known_for.length > 0 && (
-                  <div className="mt-2 w-full">
-                    <div className="text-xs text-gray-400 mb-1">代表作:</div>
-                    <ul className="text-xs text-gray-300 space-y-1">
-                      {person.known_for.slice(0, 3).map((work: any, i: number) => (
-                        <li key={i} className="truncate">
-                          {work.media_type === 'movie'
-                            ? work.title
-                            : work.media_type === 'tv'
-                              ? work.name
-                              : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </button>
-            ))
-          ) : searchType === 'person_works' && personWorksTarget ? (
-            personWorks.map((item, idx) => (
-              <Link key={item.id + '-' + item.media_type} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
-                <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                  {('poster_path' in item && item.poster_path) ? (
-                    <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? (item as Movie).title : item.media_type === 'tv' ? (item as TVShow).name : ''} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
-                  )}
-                </div>
-                <div className="text-white text-sm font-semibold text-center truncate w-full">
-                  {item.media_type === 'movie' ? (item as Movie).title : item.media_type === 'tv' ? (item as TVShow).name : ''}
-                </div>
-                <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
-              </Link>
-            ))
-          ) : searchType === 'person_search' && personCandidates.length > 0 ? (
-            personCandidates.map((person) => (
-              <Link key={person.id} href={`/person/${person.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
-                <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                  {person.profile_path ? (
-                    <img src={getImageUrl(person.profile_path)} alt={person.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
-                  )}
-                </div>
-                <div className="text-white text-sm font-semibold text-center truncate w-full">{person.name}</div>
-                {/* 代表作（known_for）があれば表示 */}
-                {person.known_for && Array.isArray(person.known_for) && person.known_for.length > 0 && (
-                  <div className="mt-2 w-full">
-                    <div className="text-xs text-gray-400 mb-1">代表作:</div>
-                    <ul className="text-xs text-gray-300 space-y-1">
-                      {person.known_for.slice(0, 3).map((work: any, i: number) => (
-                        <li key={i} className="truncate">
-                          {work.media_type === 'movie'
-                            ? work.title
-                            : work.media_type === 'tv'
-                              ? work.name
-                              : ''}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </Link>
-            ))
-          ) : searchType === 'work' ? (
-            results.map((item, idx) => {
-              // 作品検索の場合は人物を除外して作品のみ表示
-              if (item.media_type === 'person') {
-                return null;
-              }
-              // 映画・TVカード
-              return (
+        <SearchResultModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        >
+          {searchType === 'work' && (
+            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              {results.map((item, idx) => item.media_type !== 'person' && (
                 <Link key={item.id} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
-                  <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
+                  <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 120 }}>
                     {item.poster_path ? (
                       <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''} className="w-full h-full object-cover" />
                     ) : (
@@ -367,30 +389,27 @@ const SearchPage = () => {
                   <div className="text-white text-sm font-semibold text-center truncate w-full">{item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''}</div>
                   <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
                 </Link>
-              );
-            }).filter(Boolean)
-          ) : (
-            // デフォルトの表示（人物と作品を混在表示）
-            results.map((item, idx) => {
-              if (item.media_type === 'person') {
-                // 人物カード
-                return (
-                  <Link key={item.id} href={`/person/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
+              )).filter(Boolean)}
+            </div>
+          )}
+          {searchType === 'person_works' && (
+            <div>
+              {personWorksTarget && (
+                <div className="mb-6 flex justify-center">
+                  <Link href={`/person/${personWorksTarget.id}`} className="bg-darkgray rounded-lg p-4 flex flex-col items-center hover:bg-primary/20 transition-colors max-w-xs">
                     <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                      {item.profile_path ? (
-                        <img src={getImageUrl(item.profile_path)} alt={item.name} className="w-full h-full object-cover" />
+                      {personWorksTarget.profile_path ? (
+                        <img src={getImageUrl(personWorksTarget.profile_path)} alt={personWorksTarget.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
                       )}
                     </div>
-                    <div className="text-white text-sm font-semibold text-center truncate w-full">{item.name}</div>
-                    <div className="text-xs text-gray-400 mt-1">人物</div>
-                    {/* 代表作（known_for）があれば表示 */}
-                    {item.known_for && Array.isArray(item.known_for) && item.known_for.length > 0 && (
+                    <div className="text-white text-lg font-semibold text-center truncate w-full">{personWorksTarget.name}</div>
+                    {personWorksTarget.known_for && Array.isArray(personWorksTarget.known_for) && personWorksTarget.known_for.length > 0 && (
                       <div className="mt-2 w-full">
                         <div className="text-xs text-gray-400 mb-1">代表作:</div>
                         <ul className="text-xs text-gray-300 space-y-1">
-                          {item.known_for.slice(0, 3).map((work: any, i: number) => (
+                          {personWorksTarget.known_for.slice(0, 3).map((work: any, i: number) => (
                             <li key={i} className="truncate">
                               {work.media_type === 'movie'
                                 ? work.title
@@ -403,25 +422,85 @@ const SearchPage = () => {
                       </div>
                     )}
                   </Link>
-                );
-              }
-              // 映画・TVカード
-              return (
-                <Link key={item.id} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
-                  <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                    {item.poster_path ? (
-                      <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
-                    )}
-                  </div>
-                  <div className="text-white text-sm font-semibold text-center truncate w-full">{item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''}</div>
-                  <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
-                </Link>
-              );
-            })
+                </div>
+              )}
+              <div className="text-lg font-bold text-primary mb-4">出演作</div>
+              <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                {personWorks.length === 0 ? (
+                  <div className="text-gray-400 col-span-full text-center">出演作が見つかりませんでした</div>
+                ) : (
+                  personWorks.map((item, idx) => (
+                    <Link key={item.id + '-' + item.media_type} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
+                      <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 120 }}>
+                        {('poster_path' in item && item.poster_path) ? (
+                          <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
+                        )}
+                      </div>
+                      <div className="text-white text-sm font-semibold text-center truncate w-full">{item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''}</div>
+                      <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
           )}
-        </div>
+          {searchType === 'director_works' && (
+            <div>
+              {personWorksTarget && (
+                <div className="mb-6 flex justify-center">
+                  <Link href={`/person/${personWorksTarget.id}`} className="bg-darkgray rounded-lg p-4 flex flex-col items-center hover:bg-primary/20 transition-colors max-w-xs">
+                    <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
+                      {personWorksTarget.profile_path ? (
+                        <img src={getImageUrl(personWorksTarget.profile_path)} alt={personWorksTarget.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
+                      )}
+                    </div>
+                    <div className="text-white text-lg font-semibold text-center truncate w-full">{personWorksTarget.name}</div>
+                    {personWorksTarget.known_for && Array.isArray(personWorksTarget.known_for) && personWorksTarget.known_for.length > 0 && (
+                      <div className="mt-2 w-full">
+                        <div className="text-xs text-gray-400 mb-1">代表作:</div>
+                        <ul className="text-xs text-gray-300 space-y-1">
+                          {personWorksTarget.known_for.slice(0, 3).map((work: any, i: number) => (
+                            <li key={i} className="truncate">
+                              {work.media_type === 'movie'
+                                ? work.title
+                                : work.media_type === 'tv'
+                                  ? work.name
+                                  : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Link>
+                </div>
+              )}
+              <div className="text-lg font-bold text-primary mb-4">監督作品</div>
+              <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                {personWorks.length === 0 ? (
+                  <div className="text-gray-400 col-span-full text-center">監督作品が見つかりませんでした</div>
+                ) : (
+                  personWorks.map((item, idx) => (
+                    <Link key={item.id + '-' + item.media_type} href={`/${item.media_type}/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
+                      <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 120 }}>
+                        {('poster_path' in item && item.poster_path) ? (
+                          <img src={getImageUrl(item.poster_path)} alt={item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
+                        )}
+                      </div>
+                      <div className="text-white text-sm font-semibold text-center truncate w-full">{item.media_type === 'movie' ? item.title : item.media_type === 'tv' ? item.name : ''}</div>
+                      <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </SearchResultModal>
       </div>
     </div>
   );

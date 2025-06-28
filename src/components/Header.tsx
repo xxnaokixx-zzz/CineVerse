@@ -314,18 +314,6 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* サーチフォームをAI機能ボタンの右に配置 */}
-          {/* <form onSubmit={(e) => handleSearch(e, false)} className="relative hidden md:block max-w-xs ml-8">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-lightgray rounded-full py-2 pl-10 pr-4 w-64 max-w-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </form> */}
-
           {/* アバターをヘッダーの一番右端に配置 */}
           <div className="flex-shrink-0 flex items-center pr-2">
             {user ? (

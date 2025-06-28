@@ -62,6 +62,7 @@ export interface PersonCredit {
   // TV specific
   name?: string;
   first_air_date?: string;
+  job?: string;
 }
 
 export interface PersonCombinedCredits {
