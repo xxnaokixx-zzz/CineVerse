@@ -26,17 +26,43 @@ export default function LoginClient() {
         setSessionExpiredMessage('');
       }, 8000);
     }
+
     const supabase = createClient();
+
+    // 初期セッション確認
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Initial session check error:', error);
+          return;
+        }
+
+        if (session && window.location.pathname === '/login') {
+          console.log('User already logged in, redirecting to home');
+          window.location.replace('/');
+        }
+      } catch (error) {
+        console.error('Initial session check failed:', error);
+      }
+    };
+
+    checkInitialSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
+      console.log('Auth state changed in login:', event, session?.user?.email);
+
+      if (event === 'SIGNED_IN' && session) {
         if (window.location.pathname === '/login') {
           window.location.replace('/');
         }
       }
       if (event === 'SIGNED_OUT') {
-        router.push('/login');
+        // ログアウト時は何もしない（既にログインページにいるため）
+        console.log('User signed out');
       }
     });
+
     return () => {
       subscription.unsubscribe();
     };

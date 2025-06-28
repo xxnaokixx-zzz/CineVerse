@@ -11,12 +11,15 @@ const SearchPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
+  const initialType = searchParams.get('type') as 'work' | 'person_works' | 'person_search' | null;
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<MediaItem[]>([]);
   const [searched, setSearched] = useState(false);
   const [trending, setTrending] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchType, setSearchType] = useState<'work' | 'person_works' | 'person_search'>('work');
+  const [searchType, setSearchType] = useState<'work' | 'person_works' | 'person_search'>(
+    initialType || 'work'
+  );
   const [personWorks, setPersonWorks] = useState<MediaItem[]>([]);
   const [personWorksError, setPersonWorksError] = useState('');
   const [personCandidates, setPersonCandidates] = useState<any[]>([]);
@@ -36,6 +39,13 @@ const SearchPage = () => {
     }
     // eslint-disable-next-line
   }, [initialQuery]);
+
+  // URLパラメータから検索種別を設定
+  useEffect(() => {
+    if (initialType) {
+      setSearchType(initialType);
+    }
+  }, [initialType]);
 
   const handleSearch = async (e?: React.FormEvent, overrideQuery?: string) => {
     if (e) e.preventDefault();
@@ -257,7 +267,7 @@ const SearchPage = () => {
                 setIsLoading(true);
                 setPersonWorksTarget(person);
                 // 出演作取得
-                const creditsRes = await fetch(`https://api.themoviedb.org/3/person/${person.id}/combined_credits?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&language=ja-JP`);
+                const creditsRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=ja-JP`);
                 const creditsData = await creditsRes.json();
                 const works = [...(creditsData.cast || []), ...(creditsData.crew || [])]
                   .filter((item, idx, arr) => item.poster_path && arr.findIndex(x => x.id === item.id) === idx)
@@ -340,38 +350,9 @@ const SearchPage = () => {
             ))
           ) : searchType === 'work' ? (
             results.map((item, idx) => {
+              // 作品検索の場合は人物を除外して作品のみ表示
               if (item.media_type === 'person') {
-                // 人物カード
-                return (
-                  <Link key={item.id} href={`/person/${item.id}`} className="bg-darkgray rounded-lg p-2 flex flex-col items-center hover:bg-primary/20 transition-colors">
-                    <div className="relative aspect-[2/3] w-full rounded-lg overflow-hidden mb-2" style={{ maxWidth: 160 }}>
-                      {item.profile_path ? (
-                        <img src={getImageUrl(item.profile_path)} alt={item.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-800">No Image</div>
-                      )}
-                    </div>
-                    <div className="text-white text-sm font-semibold text-center truncate w-full">{item.name}</div>
-                    <div className="text-xs text-gray-400 mt-1">人物</div>
-                    {/* 代表作（known_for）があれば表示 */}
-                    {item.known_for && Array.isArray(item.known_for) && item.known_for.length > 0 && (
-                      <div className="mt-2 w-full">
-                        <div className="text-xs text-gray-400 mb-1">代表作:</div>
-                        <ul className="text-xs text-gray-300 space-y-1">
-                          {item.known_for.slice(0, 3).map((work: any, i: number) => (
-                            <li key={i} className="truncate">
-                              {work.media_type === 'movie'
-                                ? work.title
-                                : work.media_type === 'tv'
-                                  ? work.name
-                                  : ''}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </Link>
-                );
+                return null;
               }
               // 映画・TVカード
               return (
@@ -387,8 +368,9 @@ const SearchPage = () => {
                   <div className="text-xs text-gray-400 mt-1">{item.media_type === 'movie' ? '映画' : item.media_type === 'tv' ? 'アニメ/ドラマ' : ''}</div>
                 </Link>
               );
-            })
+            }).filter(Boolean)
           ) : (
+            // デフォルトの表示（人物と作品を混在表示）
             results.map((item, idx) => {
               if (item.media_type === 'person') {
                 // 人物カード

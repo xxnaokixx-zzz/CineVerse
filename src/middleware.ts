@@ -90,12 +90,27 @@ export async function middleware(request: NextRequest) {
 
     if (error) {
       console.error('Auth error:', error)
-      throw error
-    }
-
-    if (!session && pathname !== '/login') {
+      // エラーが発生した場合はログインにリダイレクト
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
+      redirectUrl.searchParams.set('session_expired', 'true')
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // セッションが存在しない場合はログインページにリダイレクト
+    if (!session) {
+      console.log('No session found, redirecting to login')
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // セッションが有効期限切れの場合はログインページにリダイレクト
+    if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+      console.log('Session expired, redirecting to login')
+      const redirectUrl = new URL('/login', request.url)
+      redirectUrl.searchParams.set('redirectTo', pathname)
+      redirectUrl.searchParams.set('session_expired', 'true')
       return NextResponse.redirect(redirectUrl)
     }
 

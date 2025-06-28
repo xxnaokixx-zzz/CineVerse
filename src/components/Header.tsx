@@ -28,78 +28,110 @@ export default function Header() {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUser(user)
-        // プロフィール情報を取得
-        let { data: profile } = await supabase
-          .from('profiles')
-          .select('avatar_url, first_name, last_name')
-          .eq('id', user.id)
-          .single()
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
 
-        if (!profile) {
-          // レコードがなければinsert
-          await supabase.from('profiles').insert({
-            id: user.id,
-            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-            first_name: user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null),
-            last_name: user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null),
-            email: user.email
-          });
-          // insert後に再度select
-          const { data: insertedProfile } = await supabase
+        if (error) {
+          console.error('Auth error:', error)
+          // エラーが発生した場合はログアウト状態にする
+          setUser(null)
+          setAvatarUrl(null)
+          setFirstName('')
+          setLastName('')
+          return
+        }
+
+        if (user) {
+          setUser(user)
+          // プロフィール情報を取得
+          let { data: profile } = await supabase
             .from('profiles')
             .select('avatar_url, first_name, last_name')
             .eq('id', user.id)
-            .single();
-          profile = insertedProfile;
-        } else if (!profile?.avatar_url || !profile?.first_name || !profile?.last_name) {
-          // 既存ロジック: update
-          const oauthAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
-          const givenName = user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null);
-          const familyName = user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null);
+            .single()
 
-          const updateData: any = {};
-          if (oauthAvatar && !profile?.avatar_url) updateData.avatar_url = oauthAvatar;
-          if (givenName && !profile?.first_name) updateData.first_name = givenName;
-          if (familyName && !profile?.last_name) updateData.last_name = familyName;
-
-          if (Object.keys(updateData).length > 0) {
-            await supabase
-              .from('profiles')
-              .update(updateData)
-              .eq('id', user.id);
-            // update後に再度select
-            const { data: updatedProfile } = await supabase
+          if (!profile) {
+            // レコードがなければinsert
+            await supabase.from('profiles').insert({
+              id: user.id,
+              avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+              first_name: user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null),
+              last_name: user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null),
+              email: user.email
+            });
+            // insert後に再度select
+            const { data: insertedProfile } = await supabase
               .from('profiles')
               .select('avatar_url, first_name, last_name')
               .eq('id', user.id)
               .single();
-            profile = updatedProfile;
-          }
-        }
+            profile = insertedProfile;
+          } else if (!profile?.avatar_url || !profile?.first_name || !profile?.last_name) {
+            // 既存ロジック: update
+            const oauthAvatar = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+            const givenName = user.user_metadata?.given_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[0] : null);
+            const familyName = user.user_metadata?.family_name || (user.user_metadata?.name ? user.user_metadata.name.split(' ')[1] : null);
 
-        if (profile?.avatar_url) {
-          setAvatarUrl(profile.avatar_url)
+            const updateData: any = {};
+            if (oauthAvatar && !profile?.avatar_url) updateData.avatar_url = oauthAvatar;
+            if (givenName && !profile?.first_name) updateData.first_name = givenName;
+            if (familyName && !profile?.last_name) updateData.last_name = familyName;
+
+            if (Object.keys(updateData).length > 0) {
+              await supabase
+                .from('profiles')
+                .update(updateData)
+                .eq('id', user.id);
+              // update後に再度select
+              const { data: updatedProfile } = await supabase
+                .from('profiles')
+                .select('avatar_url, first_name, last_name')
+                .eq('id', user.id)
+                .single();
+              profile = updatedProfile;
+            }
+          }
+
+          if (profile?.avatar_url) {
+            setAvatarUrl(profile.avatar_url)
+          } else {
+            setAvatarUrl(null)
+          }
+          // 名前情報も設定
+          setFirstName(profile?.first_name || '')
+          setLastName(profile?.last_name || '')
         } else {
+          setUser(null)
           setAvatarUrl(null)
+          setFirstName('')
+          setLastName('')
         }
-        // 名前情報も設定
-        setFirstName(profile?.first_name || '')
-        setLastName(profile?.last_name || '')
-      } else {
+      } catch (error) {
+        console.error('Error fetching user data:', error)
         setUser(null)
         setAvatarUrl(null)
+        setFirstName('')
+        setLastName('')
       }
     }
 
+    // 初期データ取得
     fetchUserData()
 
     // onAuthStateChangeで自動反映
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUserData()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email)
+
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
+        setUser(null)
+        setAvatarUrl(null)
+        setFirstName('')
+        setLastName('')
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        fetchUserData()
+      }
     })
+
     return () => {
       subscription.unsubscribe()
     }
@@ -118,13 +150,34 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      // Clear any cached data
-      router.push('/login');
+      console.log('Logging out...')
+
+      // ローカルストレージをクリア
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
+
+      // Supabaseからログアウト
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error('Logout error:', error)
+      }
+
+      // 状態をリセット
+      setUser(null)
+      setAvatarUrl(null)
+      setFirstName('')
+      setLastName('')
+      setAccountModalOpen(false)
+
+      // ログインページにリダイレクト
+      router.push('/login')
     } catch (error) {
-      console.error('Logout error:', error);
-      // Force redirect even if logout fails
-      router.push('/login');
+      console.error('Logout error:', error)
+      // エラーが発生しても強制的にリダイレクト
+      router.push('/login')
     }
   };
 
@@ -191,6 +244,31 @@ export default function Header() {
       ? supabase.storage.from('avatars').getPublicUrl(avatarUrl).data.publicUrl
       : '/default-avatar.svg';
   console.log('displayAvatarUrl:', displayAvatarUrl);
+
+  // デバッグ用：セッション状態を定期的にチェック
+  useEffect(() => {
+    const debugSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Debug - Session state:', {
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          expiresAt: session?.expires_at,
+          error: error?.message
+        });
+      } catch (error) {
+        console.error('Debug - Session check failed:', error);
+      }
+    };
+
+    // 初回チェック
+    debugSession();
+
+    // 5秒ごとにチェック（デバッグ用）
+    const interval = setInterval(debugSession, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="bg-black sticky top-0 z-50 shadow-lg border-b border-gray-800">
