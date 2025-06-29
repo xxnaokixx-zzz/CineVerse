@@ -13,8 +13,8 @@ import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
 const SearchPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialQuery = searchParams.get('q') || '';
-  const initialType = searchParams.get('type') as 'work' | 'person_works' | 'person_search' | null;
+  const initialQuery = searchParams?.get('q') || '';
+  const initialType = searchParams?.get('type') as 'work' | 'person_works' | 'person_search' | null;
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<MediaItem[]>([]);
   const [searched, setSearched] = useState(false);
@@ -65,6 +65,7 @@ const SearchPage = () => {
     let officialTitle: string | undefined = undefined;
     let cast: string[] | undefined = undefined;
     let crew: string[] | undefined = undefined;
+    let first: any = undefined;
 
     setIsLoading(true);
     setSearched(false);
@@ -76,7 +77,7 @@ const SearchPage = () => {
         const data = await multiSearch(searchTerm.trim());
         setResults(data.results);
         if (data.results && data.results.length > 0) {
-          const first = data.results[0];
+          first = data.results[0];
           // 作品詳細取得
           let details: any = undefined;
           if (first.media_type === 'movie') {
@@ -273,7 +274,7 @@ const SearchPage = () => {
       setPersonWorksError('検索中にエラーが発生しました');
     } finally {
       // 検索履歴に追加（画像・正式タイトルも）
-      if (searchType === 'work') {
+      if (searchType === 'work' && first) {
         addToHistory(searchTerm.trim(), imageUrl, rating, year, officialTitle, cast, crew, first.id, first.media_type);
       } else if (searchType === 'person_works' || searchType === 'person_search' || searchType === 'director_works') {
         // 人物検索の場合は、候補が1人の場合のみ履歴に保存
@@ -291,9 +292,7 @@ const SearchPage = () => {
             person.name,
             person.known_for_department || 'Actor',
             personKnownFor,
-            person.profile_path || undefined,
-            person.id,
-            person.media_type
+            person.profile_path || undefined
           );
         } else if (searchType === 'person_works' && personWorksTarget) {
           const personKnownFor = personWorks.slice(0, 4).map((work: any) => ({
@@ -308,9 +307,7 @@ const SearchPage = () => {
             personWorksTarget.name,
             personWorksTarget.known_for_department || 'Actor',
             personKnownFor,
-            personWorksTarget.profile_path || undefined,
-            personWorksTarget.id,
-            personWorksTarget.media_type
+            personWorksTarget.profile_path || undefined
           );
         } else if (searchType === 'director_works' && personWorksTarget) {
           const personKnownFor = personWorks.slice(0, 4).map((work: any) => ({
@@ -325,9 +322,7 @@ const SearchPage = () => {
             personWorksTarget.name,
             personWorksTarget.known_for_department || 'Director',
             personKnownFor,
-            personWorksTarget.profile_path || undefined,
-            personWorksTarget.id,
-            personWorksTarget.media_type
+            personWorksTarget.profile_path || undefined
           );
         }
       }
@@ -519,9 +514,7 @@ const SearchPage = () => {
                             item.name,
                             item.known_for_department || 'Actor',
                             personKnownFor,
-                            item.profile_path || undefined,
-                            item.id,
-                            item.media_type
+                            item.profile_path || undefined
                           );
 
                           router.push(`/person/${item.id}`);
@@ -568,9 +561,7 @@ const SearchPage = () => {
                           item.name,
                           item.known_for_department || 'Actor',
                           personKnownFor,
-                          item.profile_path || undefined,
-                          item.id,
-                          item.media_type
+                          item.profile_path || undefined
                         );
 
                         router.push(`/person/${item.id}`);

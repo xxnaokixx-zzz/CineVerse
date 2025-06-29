@@ -37,6 +37,36 @@ const formatRuntime = (minutes: number) => {
 
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
+// VODサービスロゴマッピング
+const VOD_LOGOS: Record<string, string> = {
+  'netflix': '/icons/netflix.png',
+  'hulu': '/icons/hulu.png',
+  'prime': '/icons/primevideo.png',
+  'amazon': '/icons/primevideo.png',
+  'u-next': '/icons/unext.png',
+  'unext': '/icons/unext.png',
+  'disney': '/icons/disneyplus.png',
+  'dアニメ': '/icons/danime.png',
+  'wowow': '/icons/wowow.png',
+  'apple': '/icons/appletv.png',
+  'abema': '/icons/abema.png',
+  'rakuten': '/icons/rakuten.png',
+};
+
+const isHiddenService = (service: string) => {
+  const lower = service.toLowerCase();
+  return (
+    lower.includes('standard with ads') ||
+    lower.includes('max unext channel') ||
+    lower.includes('prime video with ads')
+  );
+};
+
+// アイコン表示を一時的に無効化
+const VODServiceIcon = ({ service }: { service: string }) => {
+  return null; // アイコンを表示しない
+};
+
 export default function MovieDetailPage({ params }: PageProps) {
   const { id } = React.use(params) as { id: string };
   const router = useRouter();
@@ -51,6 +81,8 @@ export default function MovieDetailPage({ params }: PageProps) {
   const [vodProviders, setVodProviders] = useState<any[]>([]);
   const [vodModalOpen, setVodModalOpen] = useState(false);
   const [collectionMovies, setCollectionMovies] = useState<Movie[]>([]);
+  const [justWatchLinks, setJustWatchLinks] = useState<any[]>([]);
+  const [justWatchLoading, setJustWatchLoading] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -145,6 +177,34 @@ export default function MovieDetailPage({ params }: PageProps) {
     }
     if (movie) checkWatchlist();
   }, [movie]);
+
+  // JustWatch APIからVODリンクを取得
+  const fetchJustWatchLinks = async () => {
+    if (!movie?.title) return;
+
+    setJustWatchLoading(true);
+    try {
+      const response = await fetch(`/api/justwatch?title=${encodeURIComponent(movie.title)}`);
+      const data = await response.json();
+
+      if (data.success && data.vodLinks) {
+        setJustWatchLinks(data.vodLinks);
+      } else {
+        setJustWatchLinks([]);
+      }
+    } catch (error) {
+      console.error('JustWatch API error:', error);
+      setJustWatchLinks([]);
+    } finally {
+      setJustWatchLoading(false);
+    }
+  };
+
+  // VODモーダルを開く際にJustWatchリンクを取得
+  const handleVodModalOpen = () => {
+    setVodModalOpen(true);
+    fetchJustWatchLinks();
+  };
 
   // 追加処理
   const handleAddToWatchlist = async () => {
@@ -285,7 +345,7 @@ export default function MovieDetailPage({ params }: PageProps) {
                   )}
                   <button
                     className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
-                    onClick={() => setVodModalOpen(true)}
+                    onClick={handleVodModalOpen}
                   >
                     <FaTv className="mr-2" /> VOD
                   </button>
@@ -373,40 +433,89 @@ export default function MovieDetailPage({ params }: PageProps) {
 
       {/* VODモーダル */}
       {vodModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-lg shadow-lg p-6 min-w-[300px] max-w-[90vw] relative">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 p-4">
+          <div className="bg-white/10 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl p-4 min-w-[280px] max-w-[95vw] max-h-[60vh] overflow-y-auto relative">
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
+              className="absolute top-4 right-4 bg-white/90 text-gray-900 hover:bg-gray-200 text-2xl font-bold rounded-full w-10 h-10 flex items-center justify-center shadow transition-colors z-10"
               onClick={() => setVodModalOpen(false)}
               aria-label="閉じる"
             >
               ×
             </button>
-            <h2 className="text-lg font-bold mb-4 text-gray-900">配信中のVOD</h2>
-            {vodProviders.length > 0 ? (
-              <div className="flex flex-wrap gap-3">
-                {Array.from(new Map(vodProviders.map(p => [p.provider_id, p])).values()).map((provider) => (
-                  <div key={provider.provider_id} className="flex items-center gap-2 bg-lightgray rounded px-2 py-1">
-                    {provider.logo_path && (
-                      <button
-                        onClick={() => {
-                          if (provider.link) {
-                            window.open(provider.link, '_blank', 'noopener,noreferrer');
-                          }
-                        }}
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
-                        disabled={!provider.link}
-                        title={provider.link ? `${provider.provider_name}で視聴` : 'リンクが利用できません'}
-                      >
-                        <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-6 h-6 object-contain" />
-                      </button>
-                    )}
-                    <span className="text-xs text-gray-900 font-medium">{provider.provider_name}</span>
-                  </div>
-                ))}
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">配信中のVOD</h2>
+
+            {/* VODリスト（JustWatchのみ） */}
+            {justWatchLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto"></div>
+                <p className="text-gray-500 mt-4 text-lg">VOD情報を取得中...</p>
               </div>
-            ) : (
-              <p className="text-gray-500">VOD配信情報はありません。</p>
+            ) : justWatchLinks.length > 0 ? (
+              <div className="mb-6">
+                <div className="text-white text-2xl font-bold text-center mb-2">配信中のVOD</div>
+                <div className="text-xs text-gray-200 text-center mb-4">※ 古い映画や一部作品はVODリンクが正確でない場合があります。リンク先が異なる作品の場合もあります。</div>
+                <div className="grid gap-2">
+                  {Array.from(new Map(justWatchLinks.filter(link => !isHiddenService(link.service)).map(link => [link.service.toLowerCase().replace(/\s+/g, ''), link])).values()).map((link, index) => (
+                    <div key={index} className="bg-red-600 rounded-lg p-3 shadow-md flex items-center justify-between mb-2">
+                      <div className="flex-1">
+                        <div className="mb-1">
+                          <h4 className="font-semibold text-white text-base">{link.service}</h4>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+                        className="bg-black hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 shadow-md flex items-center gap-2"
+                      >
+                        <FaPlay className="text-xs" />
+                        視聴する
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* VODリスト（TMDBのみ） */}
+            {vodProviders.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  TMDB
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Array.from(new Map(vodProviders.map(p => [p.provider_id, p])).values()).map((provider) => (
+                    <div key={provider.provider_id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all duration-200">
+                      <div className="flex flex-col items-center gap-2">
+                        {provider.logo_path && (
+                          <button
+                            onClick={() => {
+                              if (provider.link) {
+                                window.open(provider.link, '_blank', 'noopener,noreferrer');
+                              }
+                            }}
+                            className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-white rounded-lg shadow-sm"
+                            disabled={!provider.link}
+                            title={provider.link ? `${provider.provider_name}で視聴` : 'リンクが利用できません'}
+                          >
+                            <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-8 h-8 object-contain" />
+                          </button>
+                        )}
+                        <span className="text-xs text-gray-700 font-medium text-center">{provider.provider_name}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {justWatchLinks.length === 0 && vodProviders.length === 0 && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaTv className="text-gray-400 text-2xl" />
+                </div>
+                <p className="text-gray-500 text-lg">VOD配信情報はありません。</p>
+                <p className="text-gray-400 text-sm mt-2">現在、この作品は配信されていない可能性があります。</p>
+              </div>
             )}
           </div>
         </div>
