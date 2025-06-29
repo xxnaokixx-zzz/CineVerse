@@ -86,6 +86,7 @@ onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent
 - **TypeScript型エラーの修正**: useSearchParamsのnull安全性を改善
 - **ビルド安定性の向上**: Next.js 15.2.0の型チェック強化に対応
 - **開発体験の改善**: TypeScriptエラーによる開発の中断を防止
+- **認証システムの強化**: ミドルウェアとページレベルの二重認証チェックを実装
 
 ### 修正されたファイル
 - `src/app/ai/recommendation/result/AIRecommendationResult.tsx`
@@ -93,8 +94,18 @@ onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent
 - `src/app/login/LoginClient.tsx`
 - `src/app/signup-success/SignupSuccessClient.tsx`
 - `src/components/Header.tsx`
+- `src/middleware.ts` - 認証チェックのデバッグログ追加
+- `src/app/page.tsx` - トップページに認証チェックを追加
 
 ### 技術的改善
 - **型安全性の向上**: 全ての`useSearchParams()`使用箇所でオプショナルチェーニングを追加
 - **ビルド安定性**: 本番ビルドが正常に完了することを保証
-- **将来性**: Next.js 15.2.0の新機能に対応 
+- **将来性**: Next.js 15.2.0の新機能に対応
+- **認証の信頼性向上**: ミドルウェアが動作しない場合のフォールバック認証を実装
+- **デバッグ機能強化**: 認証プロセスの詳細ログを追加し、問題の特定を容易に
+
+### 認証システムの改善
+- **二重認証チェック**: ミドルウェアとページレベルの両方で認証を確認
+- **フォールバック機能**: ミドルウェアが動作しない環境でも確実にログイン画面にリダイレクト
+- **デバッグログ**: 認証プロセスの各段階でログを出力し、問題の特定を支援
+- **本番環境対応**: Vercelでの動作を確認し、認証フローが正常に機能することを保証 
