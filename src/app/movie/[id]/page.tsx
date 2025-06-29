@@ -442,7 +442,7 @@ export default function MovieDetailPage({ params }: PageProps) {
             >
               ×
             </button>
-            <h2 className="text-2xl font-bold mb-6 text-gray-900 text-center">配信中のVOD</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white-900 text-center">配信中のVOD</h2>
 
             {/* VODリスト（JustWatchのみ） */}
             {justWatchLoading ? (
@@ -452,7 +452,6 @@ export default function MovieDetailPage({ params }: PageProps) {
               </div>
             ) : justWatchLinks.length > 0 ? (
               <div className="mb-6">
-                <div className="text-white text-2xl font-bold text-center mb-2">配信中のVOD</div>
                 <div className="text-xs text-gray-200 text-center mb-4">※ 古い映画や一部作品はVODリンクが正確でない場合があります。リンク先が異なる作品の場合もあります。</div>
                 <div className="grid gap-2">
                   {Array.from(new Map(justWatchLinks.filter(link => !isHiddenService(link.service)).map(link => [link.service.toLowerCase().replace(/\s+/g, ''), link])).values()).map((link, index) => (
@@ -476,38 +475,6 @@ export default function MovieDetailPage({ params }: PageProps) {
             ) : null}
 
             {/* VODリスト（TMDBのみ） */}
-            {vodProviders.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                  TMDB
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {Array.from(new Map(vodProviders.map(p => [p.provider_id, p])).values()).map((provider) => (
-                    <div key={provider.provider_id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all duration-200">
-                      <div className="flex flex-col items-center gap-2">
-                        {provider.logo_path && (
-                          <button
-                            onClick={() => {
-                              if (provider.link) {
-                                window.open(provider.link, '_blank', 'noopener,noreferrer');
-                              }
-                            }}
-                            className="cursor-pointer hover:opacity-80 transition-opacity p-2 bg-white rounded-lg shadow-sm"
-                            disabled={!provider.link}
-                            title={provider.link ? `${provider.provider_name}で視聴` : 'リンクが利用できません'}
-                          >
-                            <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-8 h-8 object-contain" />
-                          </button>
-                        )}
-                        <span className="text-xs text-gray-700 font-medium text-center">{provider.provider_name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {justWatchLinks.length === 0 && vodProviders.length === 0 && (
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
