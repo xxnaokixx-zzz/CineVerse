@@ -76,4 +76,25 @@ onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent
 
 **リリース日**: 2025年6月29日  
 **バージョン**: v1.9.3  
-**前バージョン**: v1.9.2 
+**前バージョン**: v1.9.2
+
+---
+
+## 🔧 v1.9.3.1 ホットフィックス (2025年6月29日)
+
+### 修正内容
+- **TypeScript型エラーの修正**: useSearchParamsのnull安全性を改善
+- **ビルド安定性の向上**: Next.js 15.2.0の型チェック強化に対応
+- **開発体験の改善**: TypeScriptエラーによる開発の中断を防止
+
+### 修正されたファイル
+- `src/app/ai/recommendation/result/AIRecommendationResult.tsx`
+- `src/app/ai/summary/AISummaryPageClient.tsx`
+- `src/app/login/LoginClient.tsx`
+- `src/app/signup-success/SignupSuccessClient.tsx`
+- `src/components/Header.tsx`
+
+### 技術的改善
+- **型安全性の向上**: 全ての`useSearchParams()`使用箇所でオプショナルチェーニングを追加
+- **ビルド安定性**: 本番ビルドが正常に完了することを保証
+- **将来性**: Next.js 15.2.0の新機能に対応 
