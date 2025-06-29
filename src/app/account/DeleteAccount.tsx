@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { createClient } from '@/lib/supabase/client';
 
 export default function DeleteAccount() {
   const [confirmText, setConfirmText] = useState("");
@@ -38,10 +39,12 @@ export default function DeleteAccount() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "アカウントの削除に失敗しました");
       setSuccess(true);
+      // セッションをクリア
+      const supabase = createClient();
+      await supabase.auth.signOut();
       setTimeout(() => {
         window.location.href = '/login';
-      }, 2000);
-      // 必要ならリダイレクトやログアウト処理
+      }, 1000);
     } catch (err: any) {
       setError(err.message || "アカウントの削除に失敗しました");
       setShake(true);

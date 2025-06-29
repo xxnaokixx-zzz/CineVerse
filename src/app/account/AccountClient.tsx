@@ -196,8 +196,8 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
     }
   };
 
-  // User欄の表示を「Last Name + First Name」に
-  const fullName = [lastName, firstName].filter(Boolean).join(' ') || 'User';
+  // User欄の表示を「苗字 名前」に
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || 'User';
   const email = user.email;
   const joined = user.created_at ? new Date(user.created_at).toLocaleDateString() : '';
 
@@ -277,7 +277,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <div className="text-sm text-gray-400 mb-1">First Name</div>
+                      <div className="text-sm text-gray-400 mb-1">苗字</div>
                       {!isEditing ? (
                         <div className="text-lg">{firstName || '-'}</div>
                       ) : (
@@ -286,12 +286,12 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
                           value={editFirstName}
                           onChange={e => setEditFirstName(e.target.value)}
                           className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-                          placeholder="First Name"
+                          placeholder="苗字"
                         />
                       )}
                     </div>
                     <div>
-                      <div className="text-sm text-gray-400 mb-1">Last Name</div>
+                      <div className="text-sm text-gray-400 mb-1">名前</div>
                       {!isEditing ? (
                         <div className="text-lg">{lastName || '-'}</div>
                       ) : (
@@ -300,7 +300,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
                           value={editLastName}
                           onChange={e => setEditLastName(e.target.value)}
                           className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-                          placeholder="Last Name"
+                          placeholder="名前"
                         />
                       )}
                     </div>
@@ -372,23 +372,23 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
               <div className="bg-darkgray p-8 rounded-lg shadow-lg w-full max-w-md">
                 <h2 className="text-xl font-bold mb-4">プロフィール名を登録してください</h2>
                 <div className="mb-4">
-                  <label className="block text-gray-300 mb-1">First Name</label>
+                  <label className="block text-gray-300 mb-1">苗字</label>
                   <input
                     type="text"
                     value={editFirstName}
                     onChange={e => setEditFirstName(e.target.value)}
                     className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="First Name"
+                    placeholder="苗字"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-gray-300 mb-1">Last Name</label>
+                  <label className="block text-gray-300 mb-1">名前</label>
                   <input
                     type="text"
                     value={editLastName}
                     onChange={e => setEditLastName(e.target.value)}
                     className="bg-gray-300 text-black rounded px-3 py-2 w-full border border-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Last Name"
+                    placeholder="名前"
                   />
                 </div>
                 <button

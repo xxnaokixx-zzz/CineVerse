@@ -22,7 +22,7 @@ export default function AccountModal({ isOpen, onClose, onLogout, user, avatarUr
     (lastName || user?.user_metadata?.last_name || '') +
     ((lastName || user?.user_metadata?.last_name) && (firstName || user?.user_metadata?.first_name) ? ' ' : '') +
     (firstName || user?.user_metadata?.first_name || '');
-  const displayName = fullName.trim() || user?.email || 'ゲスト';
+  const displayName = (firstName && lastName) ? `${firstName} ${lastName}` : (firstName || lastName || '');
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="bg-darkgray rounded-lg shadow-xl max-w-sm w-full mx-4">

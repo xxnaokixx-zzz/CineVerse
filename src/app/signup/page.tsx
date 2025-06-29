@@ -190,14 +190,18 @@ export default function SignupPage() {
 
       // プロフィールも必ずupsert
       if (signUpData.user) {
-        const { error: upsertError } = await supabase.from('profiles').upsert({
+        await new Promise(res => setTimeout(res, 1000));
+        const meta = signUpData.user.user_metadata || {};
+        const upsertObj = {
           id: signUpData.user.id,
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
-          avatar_url: avatarUrl,
-          email: email,
-        });
+          first_name: meta.first_name || firstName.trim(),
+          last_name: meta.last_name || lastName.trim(),
+          full_name: meta.full_name || `${firstName} ${lastName}`.trim(),
+          avatar_url: meta.avatar_url || avatarUrl,
+          email: meta.email || email.trim(),
+        };
+        console.log('profiles upsert object:', upsertObj);
+        const { error: upsertError } = await supabase.from('profiles').upsert(upsertObj);
         if (upsertError) {
           console.error('profiles upsert error:', upsertError);
         } else {
@@ -291,7 +295,7 @@ export default function SignupPage() {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">姓</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">苗字</label>
                   <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="山田" />
                   {errors.firstName && (
                     <div className="text-red-400 text-sm mt-1 flex items-center">
@@ -300,7 +304,7 @@ export default function SignupPage() {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">名</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">名前</label>
                   <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-lightgray border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors" placeholder="太郎" />
                   {errors.lastName && (
                     <div className="text-red-400 text-sm mt-1 flex items-center">

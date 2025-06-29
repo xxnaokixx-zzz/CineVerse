@@ -210,7 +210,7 @@ export default function LoginClient() {
                 <div className="w-full border-t border-gray-600"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-darkgray text-gray-400">またはメールアドレスでサインイン</span>
+                <span className="px-4 bg-darkgray text-gray-400">またはメールアドレスでログイン</span>
               </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -267,14 +267,14 @@ export default function LoginClient() {
                   <span>{errors.general}</span>
                 </div>
               )}
-              <button type="submit" disabled={loading} className="w-full bg-primary hover:bg-secondary text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50">
+              <button type="submit" disabled={loading} className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center disabled:opacity-50">
                 {loading ? (
                   <>
                     <FaSpinner className="animate-spin mr-2" />
                     <span>サインイン中...</span>
                   </>
                 ) : (
-                  <span>サインイン</span>
+                  <span>ログイン</span>
                 )}
               </button>
             </form>
