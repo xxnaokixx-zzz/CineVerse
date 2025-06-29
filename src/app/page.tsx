@@ -4,8 +4,30 @@ import NowPlayingSection from "@/components/NowPlayingSection";
 import { getTrendingMovies } from "@/services/movieService";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
+  // 認証チェック
+  const supabase = await createClient();
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  if (error) {
+    console.error('Auth error in page:', error);
+    redirect('/login?session_expired=true');
+  }
+
+  if (!session) {
+    console.log('No session found in page, redirecting to login');
+    redirect('/login');
+  }
+
+  // セッションが有効期限切れの場合はログインページにリダイレクト
+  if (session.expires_at && new Date(session.expires_at * 1000) < new Date()) {
+    console.log('Session expired in page, redirecting to login');
+    redirect('/login?session_expired=true');
+  }
+
   const trendingMovies = await getTrendingMovies();
 
   return (
