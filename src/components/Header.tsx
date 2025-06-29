@@ -144,7 +144,7 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
-    if (pathname === '/' && searchParams.get('openAIModal') === '1') {
+    if (pathname === '/' && (searchParams?.get('openAIModal') || '') === '1') {
       router.push('/ai')
     }
   }, [pathname, searchParams])
@@ -241,11 +241,12 @@ export default function Header() {
 
   // avatarUrlの表示用URLを判定
   console.log('avatarUrl:', avatarUrl);
-  const displayAvatarUrl = avatarUrl && avatarUrl.startsWith('http')
-    ? avatarUrl
-    : avatarUrl
-      ? supabase.storage.from('avatars').getPublicUrl(avatarUrl).data.publicUrl
-      : '/default-avatar.svg';
+  let displayAvatarUrl: string = '/default-avatar.svg';
+  if (avatarUrl && avatarUrl.startsWith('http')) {
+    displayAvatarUrl = avatarUrl;
+  } else if (avatarUrl) {
+    displayAvatarUrl = supabase.storage.from('avatars').getPublicUrl(avatarUrl).data.publicUrl || '/default-avatar.svg';
+  }
   console.log('displayAvatarUrl:', displayAvatarUrl);
 
   // デバッグ用：セッション状態を定期的にチェック
@@ -300,7 +301,7 @@ export default function Header() {
                   {/* ジャンルボタン */}
                   <button
                     onClick={toggleGenreModal}
-                    className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname) ? 'text-primary' : ''}`}
+                    className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname || "") ? 'text-primary' : ''}`}
                   >
                     <span>Genre</span>
                   </button>
@@ -406,7 +407,7 @@ export default function Header() {
                 {/* モバイル用ジャンルボタン */}
                 <button
                   onClick={toggleGenreModal}
-                  className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname) ? 'text-primary' : ''}`}
+                  className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname || "") ? 'text-primary' : ''}`}
                 >
                   Genre
                 </button>

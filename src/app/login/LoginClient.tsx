@@ -20,7 +20,7 @@ export default function LoginClient() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (searchParams.get('session_expired') === 'true') {
+    if (searchParams && searchParams.get('session_expired') === 'true') {
       setSessionExpiredMessage('セッションの有効期限が切れました。再度ログインしてください。');
       setTimeout(() => {
         setSessionExpiredMessage('');

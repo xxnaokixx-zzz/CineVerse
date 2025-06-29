@@ -8,7 +8,7 @@ import AIRecommendationCard from "@/components/AIRecommendationCard";
 export default function AIRecommendationResult() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const mood = searchParams.get("mood") || "";
+  const mood = searchParams?.get("mood") || "";
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<{
     recommendations: Array<{

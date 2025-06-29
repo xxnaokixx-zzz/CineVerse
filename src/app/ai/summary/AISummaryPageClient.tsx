@@ -10,7 +10,7 @@ type SearchResult = (Movie | TVShow) & { title: string };
 
 export default function AISummaryPageClient() {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('query') || '';
+  const initialQuery = searchParams?.get('query') || '';
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);

@@ -8,9 +8,9 @@ import { createClient } from '@/lib/supabase/client';
 export default function SignupSuccessClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const name = searchParams.get("name") || "";
-  const email = searchParams.get("email") || "";
-  const avatarPath = searchParams.get("avatar") || "";
+  const name = searchParams?.get("name") || "";
+  const email = searchParams?.get("email") || "";
+  const avatarPath = searchParams?.get("avatar") || "";
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [resending, setResending] = useState(false);
