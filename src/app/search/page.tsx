@@ -7,6 +7,8 @@ import type { MediaItem } from '@/services/movieService';
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import SearchResultModal from '@/components/SearchResultModal';
+import SearchHistoryList from '@/components/SearchHistoryList';
+import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
 
 const SearchPage = () => {
   const searchParams = useSearchParams();
@@ -28,6 +30,11 @@ const SearchPage = () => {
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 検索履歴機能
+  const { searchHistory, addToHistory, removeFromHistory, clearHistory } = useSearchHistory();
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getTrendingMovies().then(setTrending);
@@ -51,6 +58,11 @@ const SearchPage = () => {
     if (e) e.preventDefault();
     const searchTerm = overrideQuery !== undefined ? overrideQuery : query;
     if (!searchTerm.trim()) return;
+
+    // 検索履歴に追加
+    addToHistory(searchTerm.trim());
+    setShowSearchHistory(false);
+
     setIsLoading(true);
     setSearched(false);
     setPersonWorks([]);
@@ -148,6 +160,7 @@ const SearchPage = () => {
   // 入力時のサジェスト取得
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
+    setShowSearchHistory(false);
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     const value = e.target.value.trim();
     if (!value) {
@@ -164,6 +177,24 @@ const SearchPage = () => {
         setSuggestions(data.results || []);
       }
     }, 300);
+  };
+
+  // 検索履歴から検索を実行
+  const handleHistorySelect = (historyQuery: string) => {
+    setQuery(historyQuery);
+    handleSearch(undefined, historyQuery);
+  };
+
+  // 検索履歴の表示/非表示を切り替え
+  const handleInputFocus = () => {
+    if (searchHistory.length > 0 && !query.trim()) {
+      setShowSearchHistory(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // 少し遅延させて、履歴アイテムのクリックが先に処理されるようにする
+    setTimeout(() => setShowSearchHistory(false), 200);
   };
 
   return (
@@ -235,7 +266,20 @@ const SearchPage = () => {
               placeholder={searchType === 'work' ? '作品名を入力...' : '人物名を入力...'}
               className="w-full px-4 py-2 rounded-md bg-darkgray text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
               autoComplete="off"
+              ref={searchInputRef}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
+
+            {/* 検索履歴リスト */}
+            <SearchHistoryList
+              searchHistory={searchHistory}
+              onSelectHistory={handleHistorySelect}
+              onRemoveHistory={removeFromHistory}
+              onClearHistory={clearHistory}
+              isVisible={showSearchHistory}
+            />
+
             <div className="relative"
               onMouseEnter={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}

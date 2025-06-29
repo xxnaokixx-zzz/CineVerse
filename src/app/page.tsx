@@ -1,5 +1,6 @@
 import HeroCarousel from "@/components/HeroCarousel";
 import TrendingSection from "@/components/TrendingSection";
+import NowPlayingSection from "@/components/NowPlayingSection";
 import { getTrendingMovies } from "@/services/movieService";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
@@ -26,6 +27,7 @@ export default async function Home() {
         </div>
       </section>
       <TrendingSection movies={trendingMovies} />
+      <NowPlayingSection />
     </main>
   );
 }

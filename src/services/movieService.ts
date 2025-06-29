@@ -166,6 +166,34 @@ interface MultiSearchResponse {
   }>;
 }
 
+export interface VODProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+  link?: string;
+}
+
+export interface VODProviders {
+  JP?: {
+    link?: string;
+    flatrate?: VODProvider[];
+    rent?: VODProvider[];
+    buy?: VODProvider[];
+  };
+}
+
+export interface VODProvidersResponse {
+  id: number;
+  results: {
+    JP?: {
+      link?: string;
+      flatrate?: VODProvider[];
+      rent?: VODProvider[];
+      buy?: VODProvider[];
+    };
+  };
+}
+
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -323,4 +351,17 @@ export async function getMovieCollection(collectionId: number): Promise<any> {
 
 export async function getTVShowKeywords(id: string): Promise<{ id: number; results: { id: number; name: string }[] }> {
   return fetchFromTMDB<{ id: number; results: { id: number; name: string }[] }>(`/tv/${id}/keywords`);
+}
+
+export async function getMovieVODProviders(id: string): Promise<VODProvidersResponse> {
+  return fetchFromTMDB<VODProvidersResponse>(`/movie/${id}/watch/providers`);
+}
+
+export async function getTVShowVODProviders(id: string): Promise<VODProvidersResponse> {
+  return fetchFromTMDB<VODProvidersResponse>(`/tv/${id}/watch/providers`);
+}
+
+export async function getNowPlayingMovies(): Promise<Movie[]> {
+  const data = await fetchFromTMDB<FetchMoviesResponse>('/movie/now_playing?region=JP&language=ja');
+  return data.results;
 } 

@@ -80,7 +80,12 @@ export default function MovieDetailPage({ params }: PageProps) {
             const data = await res.json();
             const jp = data.results?.JP;
             if (jp && jp.flatrate) {
-              setVodProviders(jp.flatrate);
+              // linkプロパティを各プロバイダーに追加
+              const providersWithLink = jp.flatrate.map((provider: any) => ({
+                ...provider,
+                link: jp.link
+              }));
+              setVodProviders(providersWithLink);
             } else {
               setVodProviders([]);
             }
@@ -372,7 +377,18 @@ export default function MovieDetailPage({ params }: PageProps) {
                 {Array.from(new Map(vodProviders.map(p => [p.provider_id, p])).values()).map((provider) => (
                   <div key={provider.provider_id} className="flex items-center gap-2 bg-lightgray rounded px-2 py-1">
                     {provider.logo_path && (
-                      <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-6 h-6 object-contain" />
+                      <button
+                        onClick={() => {
+                          if (provider.link) {
+                            window.open(provider.link, '_blank', 'noopener,noreferrer');
+                          }
+                        }}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        disabled={!provider.link}
+                        title={provider.link ? `${provider.provider_name}で視聴` : 'リンクが利用できません'}
+                      >
+                        <img src={`https://image.tmdb.org/t/p/w45${provider.logo_path}`} alt={provider.provider_name} className="w-6 h-6 object-contain" />
+                      </button>
                     )}
                     <span className="text-xs text-gray-900 font-medium">{provider.provider_name}</span>
                   </div>

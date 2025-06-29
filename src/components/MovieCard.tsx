@@ -1,7 +1,7 @@
 "use client";
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaStar, FaFilm, FaTv } from 'react-icons/fa';
+import { FaStar, FaFilm, FaTv, FaTicketAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
 type MovieCardProps = {
@@ -11,10 +11,50 @@ type MovieCardProps = {
   rating: string;
   year: string;
   mediaType: 'movie' | 'tv' | 'person';
+  releaseDate?: string;
+  isNowPlaying?: boolean;
 };
 
-export default function MovieCard({ id, imageUrl, title, rating, year, mediaType }: MovieCardProps) {
+export default function MovieCard({
+  id,
+  imageUrl,
+  title,
+  rating,
+  year,
+  mediaType,
+  releaseDate,
+  isNowPlaying
+}: MovieCardProps) {
   const router = useRouter();
+
+  // 上映ステータスを判定
+  const getTheaterStatus = () => {
+    if (mediaType !== 'movie' || !releaseDate) return null;
+
+    const releaseDateObj = new Date(releaseDate);
+    const now = new Date();
+    const diffTime = now.getTime() - releaseDateObj.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // 公開から30日以内は上映中とみなす
+    if (diffDays >= 0 && diffDays <= 30) {
+      return 'now';
+    } else if (diffDays > 30) {
+      return 'ended';
+    }
+    return null;
+  };
+
+  const theaterStatus = getTheaterStatus();
+  const isCurrentlyPlaying = isNowPlaying || theaterStatus === 'now';
+
+  const handleTheaterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // 映画館検索サイトへのリンク
+    window.open('https://eigakan.org/', '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <Link href={`/${mediaType}/${id}`} className="block group">
       <div className="bg-darkgray rounded-lg overflow-hidden transition-transform duration-300 transform group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-primary/30">
@@ -32,10 +72,40 @@ export default function MovieCard({ id, imageUrl, title, rating, year, mediaType
               <FaFilm className="text-4xl text-gray-500" />
             </div>
           )}
+
+          {/* メディアタイプラベル */}
           {mediaType === 'tv' && (
             <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold py-1 px-2 rounded-full flex items-center gap-1">
               <FaTv />
               <span>TV</span>
+            </div>
+          )}
+
+          {/* 上映ステータスラベル */}
+          {isCurrentlyPlaying && (
+            <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold py-1 px-2 rounded-full flex items-center gap-1">
+              <FaTicketAlt />
+              <span>上映中</span>
+            </div>
+          )}
+
+          {/* 上映終了ラベル */}
+          {theaterStatus === 'ended' && (
+            <div className="absolute top-2 right-2 bg-gray-600 text-white text-xs font-bold py-1 px-2 rounded-full">
+              上映終了
+            </div>
+          )}
+
+          {/* 上映中の場合の映画館リンクオーバーレイ */}
+          {isCurrentlyPlaying && (
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <button
+                onClick={handleTheaterClick}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <FaTicketAlt />
+                映画館で見る
+              </button>
             </div>
           )}
         </div>
