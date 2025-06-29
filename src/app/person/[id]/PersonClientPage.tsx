@@ -96,10 +96,8 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                 </div>
                 <div className="flex-1">
                   <h1 className="text-3xl md:text-5xl font-bold mb-2">{person.name}</h1>
-                  <div className="mb-4">
+                  <div className="mb-4 flex gap-4">
                     <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
-                  </div>
-                  <div className="mb-4">
                     <button
                       className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
                       onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(person.name)}`, '_blank', 'noopener,noreferrer')}
