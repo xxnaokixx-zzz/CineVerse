@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, getMovieCredits, getSimilarMovies, getMovieVideos, getImageUrl, MovieDetails, Movie, Cast, Crew, Video, getMovieCollection } from '@/services/movieService';
-import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaUser, FaTv } from 'react-icons/fa';
+import { FaStar, FaPlay, FaBookmark, FaThumbsUp, FaComment, FaUser, FaTv, FaSearch } from 'react-icons/fa';
 import { notFound, useRouter } from 'next/navigation';
 import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
@@ -377,6 +377,12 @@ export default function MovieDetailPage({ params }: PageProps) {
                     onClick={handleVodModalOpen}
                   >
                     <FaTv className="mr-2" /> VOD
+                  </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(movie.title)}`, '_blank', 'noopener,noreferrer')}
+                  >
+                    <FaSearch className="mr-2" /> 検索
                   </button>
                 </div>
               </div>

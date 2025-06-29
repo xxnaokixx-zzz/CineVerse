@@ -361,6 +361,12 @@ export default function TVShowDetailPage({ params }: PageProps) {
                   >
                     <FaBroadcastTower className="mr-2" /> 放送局
                   </button>
+                  <button
+                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(tvShow.name)}`, '_blank', 'noopener,noreferrer')}
+                  >
+                    <FaSearch className="mr-2" /> 検索
+                  </button>
                 </div>
               </div>
             </div>

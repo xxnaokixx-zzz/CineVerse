@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PersonDetails, PersonCombinedCredits, PersonExternalIds, PersonCredit, getImageUrl } from '@/services/movieService';
 import MovieCard from '@/components/MovieCard';
-import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare } from 'react-icons/fa';
+import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare, FaSearch } from 'react-icons/fa';
 import AIAssistantButton from '@/components/AIAssistantButton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
@@ -20,7 +20,7 @@ interface PersonClientPageProps {
 export default function PersonClientPage({ person, credits, externalIds, knownFor }: PersonClientPageProps) {
   const [isBioExpanded, setIsBioExpanded] = useState(false);
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('role') === 'director' ? 'director' : 'cast';
+  const initialTab = searchParams?.get('role') === 'director' ? 'director' : 'cast';
   const [filmographyTab, setFilmographyTab] = useState<'cast' | 'director' | 'crew'>(initialTab);
   const [filmographyFilter, setFilmographyFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [showAll, setShowAll] = useState(false);
@@ -98,6 +98,14 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   <h1 className="text-3xl md:text-5xl font-bold mb-2">{person.name}</h1>
                   <div className="mb-4">
                     <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
+                  </div>
+                  <div className="mb-4">
+                    <button
+                      className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                      onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(person.name)}`, '_blank', 'noopener,noreferrer')}
+                    >
+                      <FaSearch className="mr-2" /> 検索
+                    </button>
                   </div>
                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mb-4">
                     <span className="text-gray-300">{person.known_for_department}</span>
