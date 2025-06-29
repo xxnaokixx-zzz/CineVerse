@@ -4,7 +4,10 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  console.log('=== MIDDLEWARE START ===')
   console.log('Middleware executing for path:', pathname)
+  console.log('User-Agent:', request.headers.get('user-agent'))
+  console.log('Host:', request.headers.get('host'))
 
   // ログイン・サインアップ・認証コールバックは除外
   if (
@@ -18,6 +21,7 @@ export async function middleware(request: NextRequest) {
     pathname.includes('.')
   ) {
     console.log('Path excluded from auth check:', pathname)
+    console.log('=== MIDDLEWARE END (EXCLUDED) ===')
     return NextResponse.next()
   }
 
@@ -29,15 +33,22 @@ export async function middleware(request: NextRequest) {
     },
   })
 
+  // 環境変数の確認
+  console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL)
+  console.log('SUPABASE_ANON_KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
-          return request.cookies.get(name)?.value
+          const cookie = request.cookies.get(name)?.value
+          console.log(`Getting cookie ${name}:`, !!cookie)
+          return cookie
         },
         set(name: string, value: string, options: CookieOptions) {
+          console.log(`Setting cookie ${name}`)
           response.cookies.set({
             name,
             value,
@@ -49,6 +60,7 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
+          console.log(`Removing cookie ${name}`)
           response.cookies.set({
             name,
             value: '',
@@ -62,9 +74,15 @@ export async function middleware(request: NextRequest) {
   )
 
   try {
+    console.log('Attempting to get session...')
     const { data: { session }, error } = await supabase.auth.getSession()
 
-    console.log('Session check result:', { hasSession: !!session, error: error?.message })
+    console.log('Session check result:', {
+      hasSession: !!session,
+      error: error?.message,
+      sessionExpiresAt: session?.expires_at,
+      currentTime: new Date().toISOString()
+    })
 
     // Handle specific refresh token errors
     if (error && error.message.includes('refresh_token_not_found')) {
@@ -92,6 +110,7 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
       redirectUrl.searchParams.set('session_expired', 'true')
+      console.log('=== MIDDLEWARE END (REDIRECT TO LOGIN - REFRESH TOKEN) ===')
       return NextResponse.redirect(redirectUrl)
     }
 
@@ -101,6 +120,7 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
       redirectUrl.searchParams.set('session_expired', 'true')
+      console.log('=== MIDDLEWARE END (REDIRECT TO LOGIN - AUTH ERROR) ===')
       return NextResponse.redirect(redirectUrl)
     }
 
@@ -109,6 +129,7 @@ export async function middleware(request: NextRequest) {
       console.log('No session found, redirecting to login')
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
+      console.log('=== MIDDLEWARE END (REDIRECT TO LOGIN - NO SESSION) ===')
       return NextResponse.redirect(redirectUrl)
     }
 
@@ -118,10 +139,12 @@ export async function middleware(request: NextRequest) {
       const redirectUrl = new URL('/login', request.url)
       redirectUrl.searchParams.set('redirectTo', pathname)
       redirectUrl.searchParams.set('session_expired', 'true')
+      console.log('=== MIDDLEWARE END (REDIRECT TO LOGIN - SESSION EXPIRED) ===')
       return NextResponse.redirect(redirectUrl)
     }
 
     console.log('Authentication successful, proceeding to page')
+    console.log('=== MIDDLEWARE END (SUCCESS) ===')
     return response
   } catch (error) {
     console.error('Middleware error:', error)
@@ -148,6 +171,7 @@ export async function middleware(request: NextRequest) {
       })
     })
 
+    console.log('=== MIDDLEWARE END (REDIRECT TO LOGIN - EXCEPTION) ===')
     return response
   }
 }
