@@ -56,13 +56,24 @@ export default function TVShowDetailPage({ params }: PageProps) {
         setLoading(true);
         const tvShowPromise = getTVShowDetails(id);
         const creditsPromise = getTVShowCredits(id);
-        const similarShowsPromise = getSimilarTVShows(id);
         const videosPromise = getTVShowVideos(id);
 
-        const [tvShowData, creditsData, similarShowsData, videosData] = await Promise.all([
+        // getSimilarTVShowsを個別に処理してエラーハンドリング
+        let similarShowsData: TVShow[] = [];
+        try {
+          similarShowsData = await getSimilarTVShows(id);
+        } catch (error) {
+          console.error("Failed to fetch similar TV shows:", error);
+          // 404エラーの場合はTV番組が存在しない可能性があるため、より詳細なログを出力
+          if (error instanceof Error && error.message.includes('404')) {
+            console.warn(`Similar TV shows not found for TV show ID: ${id}. This may indicate the TV show doesn't exist or has been removed.`);
+          }
+          similarShowsData = [];
+        }
+
+        const [tvShowData, creditsData, videosData] = await Promise.all([
           tvShowPromise,
           creditsPromise,
-          similarShowsPromise,
           videosPromise,
         ]);
 

@@ -58,13 +58,24 @@ export default function MovieDetailPage({ params }: PageProps) {
         setLoading(true);
         const moviePromise = getMovieDetails(id);
         const creditsPromise = getMovieCredits(id);
-        const similarMoviesPromise = getSimilarMovies(id);
         const videosPromise = getMovieVideos(id);
 
-        const [movieData, creditsData, similarMoviesData, videosData] = await Promise.all([
+        // getSimilarMoviesを個別に処理してエラーハンドリング
+        let similarMoviesData: Movie[] = [];
+        try {
+          similarMoviesData = await getSimilarMovies(id);
+        } catch (error) {
+          console.error("Failed to fetch similar movies:", error);
+          // 404エラーの場合は映画が存在しない可能性があるため、より詳細なログを出力
+          if (error instanceof Error && error.message.includes('404')) {
+            console.warn(`Similar movies not found for movie ID: ${id}. This may indicate the movie doesn't exist or has been removed.`);
+          }
+          similarMoviesData = [];
+        }
+
+        const [movieData, creditsData, videosData] = await Promise.all([
           moviePromise,
           creditsPromise,
-          similarMoviesPromise,
           videosPromise,
         ]);
 

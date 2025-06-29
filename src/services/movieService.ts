@@ -206,11 +206,39 @@ async function fetchFromTMDB<T>(endpoint: string): Promise<T> {
   url.searchParams.append('api_key', TMDB_API_KEY);
   url.searchParams.append('language', 'ja-JP');
 
-  const response = await fetch(url.toString(), { cache: 'no-store' });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch from TMDB: ${response.statusText}`);
+  try {
+    const response = await fetch(url.toString(), { cache: 'no-store' });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('TMDB API key is invalid or expired');
+      } else if (response.status === 404) {
+        // エンドポイントからIDを抽出してより詳細なエラーメッセージを提供
+        const idMatch = endpoint.match(/\/(\d+)/);
+        const id = idMatch ? idMatch[1] : 'unknown';
+        throw new Error(`TMDB API: Resource not found (ID: ${id}). The movie/TV show may not exist or the ID is invalid.`);
+      } else if (response.status === 429) {
+        throw new Error('TMDB API rate limit exceeded. Please try again later.');
+      } else {
+        throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+      }
+    }
+
+    const data = await response.json();
+
+    // TMDB APIからのエラーレスポンスをチェック
+    if (data.status_code && data.status_message) {
+      throw new Error(`TMDB API error: ${data.status_message}`);
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error('Failed to fetch from TMDB: Network error');
+    }
   }
-  return response.json();
 }
 
 export async function getTrendingMovies(): Promise<Movie[]> {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PersonDetails, PersonCombinedCredits, PersonExternalIds, PersonCredit, getImageUrl } from '@/services/movieService';
@@ -8,6 +8,7 @@ import MovieCard from '@/components/MovieCard';
 import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare } from 'react-icons/fa';
 import AIAssistantButton from '@/components/AIAssistantButton';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
 
 interface PersonClientPageProps {
   person: PersonDetails;
@@ -24,6 +25,24 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
   const [filmographyFilter, setFilmographyFilter] = useState<'all' | 'movie' | 'tv'>('all');
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
+  const { addPersonToHistory } = useSearchHistory();
+
+  useEffect(() => {
+    const personKnownFor = knownFor.map(credit => ({
+      id: credit.id,
+      title: credit.title || credit.name || '',
+      mediaType: credit.media_type,
+      posterPath: credit.poster_path || undefined,
+    }));
+
+    addPersonToHistory(
+      person.id,
+      person.name,
+      person.known_for_department,
+      personKnownFor,
+      person.profile_path || undefined
+    );
+  }, [person, knownFor]);
 
   let filmographyList: PersonCredit[] = [];
   if (filmographyTab === 'cast') {
