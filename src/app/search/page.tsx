@@ -121,6 +121,15 @@ const SearchPage = () => {
             first.id,
             first.media_type
           );
+          console.log('SearchPage - Saved to history:', {
+            query: officialTitle || searchTerm.trim(),
+            id: first.id,
+            mediaType: first.media_type,
+            officialTitle,
+            imageUrl,
+            rating,
+            year
+          });
         }
       } else if (searchType === 'person_works') {
         const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);

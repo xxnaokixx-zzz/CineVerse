@@ -31,11 +31,16 @@ export default function SearchHistoryList({
     return null;
   }
 
-  // officialTitle重複排除
+  // デバッグ用: 履歴データの内容を確認
+  console.log('SearchHistoryList - All history data:', searchHistory);
+
+  // 重複排除（query + id + mediaType の組み合わせで一意性を保証）
   const uniqueHistory = searchHistory.filter((item, idx, arr) => {
-    if (!item.officialTitle) return true;
-    return arr.findIndex(x => x.officialTitle === item.officialTitle) === idx;
+    const key = `${item.query}-${item.id}-${item.mediaType}`;
+    return arr.findIndex(x => `${x.query}-${x.id}-${x.mediaType}` === key) === idx;
   });
+
+  console.log('SearchHistoryList - Unique history data:', uniqueHistory);
 
   // ページネーション
   const totalPages = Math.ceil(uniqueHistory.length / PAGE_SIZE);
@@ -66,8 +71,8 @@ export default function SearchHistoryList({
         )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-2">
-        {pagedHistory.map((item) => (
-          <div key={item.query} className="relative group">
+        {pagedHistory.map((item, index) => (
+          <div key={`${item.query}-${item.id}-${item.timestamp}-${index}`} className="relative group">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -119,9 +124,19 @@ export default function SearchHistoryList({
             ) : (
               <div
                 onClick={() => {
+                  console.log('SearchHistoryList - Clicked item:', {
+                    id: item.id,
+                    mediaType: item.mediaType,
+                    query: item.query,
+                    officialTitle: item.officialTitle,
+                    timestamp: item.timestamp,
+                    fullItem: item
+                  });
                   if (item.id && item.mediaType) {
+                    console.log(`Navigating to /${item.mediaType}/${item.id}`);
                     router.push(`/${item.mediaType}/${item.id}`);
                   } else {
+                    console.log('No id or mediaType, using query search');
                     onSelectHistory(item.query);
                   }
                 }}
