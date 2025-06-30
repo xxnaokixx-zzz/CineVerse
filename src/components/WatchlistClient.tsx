@@ -30,10 +30,10 @@ const STATUS_SELECT_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: '追加日（新しい順）', value: 'added_at_desc' },
-  { label: '追加日（古い順）', value: 'added_at_asc' },
-  { label: 'タイトル昇順（A→Z）', value: 'title_asc' },
-  { label: 'タイトル降順（Z→A）', value: 'title_desc' },
+  { label: '追加日 | 新しい順', value: 'added_at_desc' },
+  { label: '追加日 | 古い順', value: 'added_at_asc' },
+  { label: 'タイトル | 昇順', value: 'title_asc' },
+  { label: 'タイトル | 降順', value: 'title_desc' },
 ];
 
 const ANIMATION_GENRE_ID = 16;
@@ -52,7 +52,12 @@ function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLOR
     <div className="bg-darkgray rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 group relative">
       {isDeleteMode && (
         <div className="absolute top-2 left-2 z-10">
-          <input type="checkbox" checked={isSelected} onChange={onToggleSelection} className="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500" />
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={onToggleSelection}
+            className="appearance-none w-5 h-5 text-red-600 bg-gray-100 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-red-500 focus:ring-offset-0 checked:bg-red-600 checked:border-red-600 transition-colors cursor-pointer"
+          />
         </div>
       )}
       <div className="relative">
@@ -76,7 +81,7 @@ function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLOR
         </div>
         {!isDeleteMode && (
           <div className="flex gap-2 items-center mt-2">
-            <select className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`} value={item.status || 'Unselected'} onChange={e => onStatusChange(item.id, e.target.value)}>
+            <select className={`h-8 px-2 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`} value={item.status || 'Unselected'} onChange={e => onStatusChange(item.id, e.target.value)}>
               <option value="Unselected">ステータスを選択</option>
               {STATUS_SELECT_OPTIONS.filter((opt: { value: string; }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
@@ -296,27 +301,37 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-6">
-          <button onClick={() => setStatus('all')} className={`text-center transition-colors ${status === 'all' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
-            <div className="text-2xl font-bold">{total}</div>
-            <div className="text-xs">All</div>
+          <button onClick={() => setStatus('all')} className={`text-center transition-colors pb-2 ${status === 'all' ? 'text-white border-b-2 border-white' : 'text-gray-400 hover:text-white border-b-2 border-transparent'}`}>
+            <div className={status === 'all' ? 'animate-bounce-y' : ''}>
+              <div className="text-2xl font-bold">{total}</div>
+              <div className="text-xs">All</div>
+            </div>
           </button>
           <div className="border-l border-gray-600 h-10"></div>
-          <button onClick={() => setStatus('Want to Watch')} className="text-center transition-colors text-blue-500 hover:text-blue-400">
-            <div className="text-2xl font-bold">{toWatch}</div>
-            <div className="text-xs">To Watch</div>
+          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors pb-2 ${status === 'Want to Watch' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-blue-500/70 hover:text-blue-500 border-b-2 border-transparent'}`}>
+            <div className={status === 'Want to Watch' ? 'animate-bounce-y' : ''}>
+              <div className="text-2xl font-bold">{toWatch}</div>
+              <div className="text-xs">To Watch</div>
+            </div>
           </button>
-          <button onClick={() => setStatus('Watching')} className="text-center transition-colors text-green-600 hover:text-green-500">
-            <div className="text-2xl font-bold">{watching}</div>
-            <div className="text-xs">Watching</div>
+          <button onClick={() => setStatus('Watching')} className={`text-center transition-colors pb-2 ${status === 'Watching' ? 'text-green-600 border-b-2 border-green-600' : 'text-green-600/70 hover:text-green-600 border-b-2 border-transparent'}`}>
+            <div className={status === 'Watching' ? 'animate-bounce-y' : ''}>
+              <div className="text-2xl font-bold">{watching}</div>
+              <div className="text-xs">Watching</div>
+            </div>
           </button>
-          <button onClick={() => setStatus('Watched')} className="text-center transition-colors text-yellow-500 hover:text-yellow-400">
-            <div className="text-2xl font-bold">{watched}</div>
-            <div className="text-xs">Watched</div>
+          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors pb-2 ${status === 'Watched' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-yellow-500/70 hover:text-yellow-500 border-b-2 border-transparent'}`}>
+            <div className={status === 'Watched' ? 'animate-bounce-y' : ''}>
+              <div className="text-2xl font-bold">{watched}</div>
+              <div className="text-xs">Watched</div>
+            </div>
           </button>
           <div className="border-l border-gray-600 h-10"></div>
-          <button onClick={() => setStatus('Favorite')} className="text-center transition-colors text-pink-500 hover:text-pink-400">
-            <div className="text-2xl font-bold">{favoriteCount}</div>
-            <div className="text-xs">Favorite</div>
+          <button onClick={() => setStatus('Favorite')} className={`text-center transition-colors pb-2 ${status === 'Favorite' ? 'text-pink-500 border-b-2 border-pink-500' : 'text-pink-500/70 hover:text-pink-500 border-b-2 border-transparent'}`}>
+            <div className={status === 'Favorite' ? 'animate-bounce-y' : ''}>
+              <div className="text-2xl font-bold">{favoriteCount}</div>
+              <div className="text-xs">Favorite</div>
+            </div>
           </button>
         </div>
         <div className="flex gap-2 items-center">
@@ -349,12 +364,12 @@ export default function WatchlistClient({ items }: { items: any[] }) {
       {isDeleteMode && (
         <div className="mb-4 p-3 bg-red-900/20 border border-red-600/30 rounded-lg">
           <div className="flex flex-wrap gap-2 items-center text-sm">
-            <button onClick={selectAll} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">すべて選択</button>
-            <button onClick={deselectAll} className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">選択解除</button>
-            <button onClick={deleteSelected} disabled={selectedItems.size === 0} className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <button onClick={selectAll} className="px-3 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-700">すべて選択</button>
+            <button onClick={deselectAll} className="px-3 py-1 bg-gray-600 text-white rounded-full hover:bg-gray-700">選択解除</button>
+            <button onClick={deleteSelected} disabled={selectedItems.size === 0} className="px-3 py-1 bg-red-600 text-white rounded-full hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed">
               選択削除 ({selectedItems.size})
             </button>
-            <button onClick={deleteAll} disabled={filteredAndSortedItems.length === 0} className="px-3 py-1 bg-red-800 text-white rounded hover:bg-red-900 disabled:bg-gray-600 disabled:cursor-not-allowed">
+            <button onClick={deleteAll} disabled={filteredAndSortedItems.length === 0} className="px-3 py-1 bg-red-800 text-white rounded-full hover:bg-red-900 disabled:bg-gray-600 disabled:cursor-not-allowed">
               すべて削除 ({filteredAndSortedItems.length})
             </button>
           </div>

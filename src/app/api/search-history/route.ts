@@ -33,7 +33,8 @@ export async function GET(req: NextRequest) {
 
   // カラム名をフロントエンド用に変換
   const transformedData = data?.map(item => ({
-    id: item.tmdb_id || item.id,
+    id: item.id,
+    tmdb_id: item.tmdb_id,
     query: item.query,
     officialTitle: item.official_title,
     timestamp: item.timestamp,
@@ -141,17 +142,33 @@ export async function DELETE(req: NextRequest) {
   }
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
+  const tmdb_id = searchParams.get('tmdb_id');
+  const timestamp = searchParams.get('timestamp');
   const all = searchParams.get('all');
-  let error;
+
+  let queryBuilder = supabase.from('search_history').delete().eq('user_id', user.id);
+
   if (all === 'true') {
-    ({ error } = await supabase.from('search_history').delete().eq('user_id', user.id));
+    // No additional filters needed for 'all'
   } else if (id) {
-    ({ error } = await supabase.from('search_history').delete().eq('user_id', user.id).eq('id', id));
+    queryBuilder = queryBuilder.eq('id', id);
+  } else if (tmdb_id) {
+    queryBuilder = queryBuilder.eq('tmdb_id', tmdb_id);
+  } else if (timestamp) {
+    // timestampは文字列として渡ってくるので数値に変換
+    queryBuilder = queryBuilder.eq('timestamp', Number(timestamp));
   } else {
-    return NextResponse.json({ error: 'Specify id or all=true' }, { status: 400 });
+    return NextResponse.json({ error: 'Specify id, tmdb_id, timestamp, or all=true' }, { status: 400 });
   }
+
+  console.log('DELETE /api/search-history - Executing query with params:', { id, tmdb_id, timestamp, all });
+  const { error } = await queryBuilder;
+
   if (error) {
+    console.error('DELETE /api/search-history - Supabase error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  console.log('DELETE /api/search-history - Successfully deleted item');
   return NextResponse.json({ success: true });
 } 

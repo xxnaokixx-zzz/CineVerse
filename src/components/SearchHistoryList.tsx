@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 interface SearchHistoryListProps {
   searchHistory: SearchHistoryItem[];
   onSelectHistory: (query: string) => void;
-  onRemoveHistory: (query: string) => void;
+  onRemoveHistory: (timestamp: number) => void;
   onClearHistory: () => void;
   isVisible: boolean;
 }
@@ -76,7 +76,12 @@ export default function SearchHistoryList({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onRemoveHistory(item.query);
+                console.log('Attempting to remove history item:', {
+                  timestamp: item.timestamp,
+                  query: item.query,
+                  id: item.id
+                });
+                onRemoveHistory(item.timestamp);
               }}
               className="absolute top-2 right-2 z-10 p-1 bg-black/60 rounded-full text-gray-400 hover:text-red-500 transition-all"
               title="削除"

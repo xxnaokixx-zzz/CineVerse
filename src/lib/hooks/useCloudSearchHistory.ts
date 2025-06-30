@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 export interface SearchHistoryItem {
   id?: number;
+  tmdb_id?: number;
   query: string;
   officialTitle?: string;
   timestamp: number;
@@ -34,10 +35,11 @@ export const useCloudSearchHistory = () => {
       const res = await fetch('/api/search-history');
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      // timestampがundefined/nullの場合は0に変換
+
+      // timestampが文字列で返ってくる場合も考慮し、数値(ms)に変換する
       const normalized = (data.history || []).map((item: any) => ({
         ...item,
-        timestamp: typeof item.timestamp === 'number' ? item.timestamp : 0,
+        timestamp: item.timestamp ? new Date(item.timestamp).getTime() : 0,
       }));
       setSearchHistory(normalized);
     } catch (e) {
@@ -116,11 +118,49 @@ export const useCloudSearchHistory = () => {
   };
 
   // 履歴削除
-  const removeFromHistory = async (query: string) => {
-    const target = searchHistory.find(item => item.query === query);
-    if (!target || !target.id) return;
-    await fetch(`/api/search-history?id=${target.id}`, { method: 'DELETE' });
-    fetchHistory();
+  const removeFromHistory = async (timestamp: number) => {
+    console.log('removeFromHistory called with timestamp:', timestamp);
+
+    const target = searchHistory.find(item => item.timestamp === timestamp);
+    console.log('Found target item:', target);
+
+    if (!target) {
+      console.warn("Could not find item with timestamp:", timestamp);
+      return;
+    }
+
+    // 削除用のidentifierを決定（優先順位: id > tmdb_id > timestamp）
+    let identifier;
+    if (target.id) {
+      identifier = `id=${target.id}`;
+    } else if (target.tmdb_id) {
+      identifier = `tmdb_id=${target.tmdb_id}`;
+    } else {
+      identifier = `timestamp=${timestamp}`;
+    }
+
+    console.log('Using identifier for deletion:', identifier);
+
+    try {
+      const response = await fetch(`/api/search-history?${identifier}`, { method: 'DELETE' });
+      const result = await response.json();
+      console.log('Delete API response:', { ok: response.ok, status: response.status, result });
+
+      if (!response.ok) {
+        console.error('Failed to delete history item:', result);
+        return;
+      }
+
+      // 楽観的更新
+      setSearchHistory(prev => prev.filter(item => item.timestamp !== timestamp));
+    } catch (error) {
+      console.error('Error deleting history item:', error);
+      return;
+    }
+
+    // サーバーからの最新の状態で履歴を再同期
+    console.log('Fetching updated history after deletion');
+    await fetchHistory();
   };
 
   // 全履歴削除

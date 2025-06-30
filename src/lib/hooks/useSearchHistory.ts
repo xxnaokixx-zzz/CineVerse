@@ -108,9 +108,9 @@ function useLocalSearchHistory() {
     });
   };
 
-  const removeFromHistory = (query: string) => {
+  const removeFromHistory = (timestamp: number) => {
     setSearchHistory(prevHistory => {
-      const newHistory = prevHistory.filter(item => item.query !== query);
+      const newHistory = prevHistory.filter(item => item.timestamp !== timestamp);
       localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
       return newHistory;
     });
