@@ -51,7 +51,22 @@ export async function GET(req: NextRequest) {
     profilePath: item.profile_path,
   })) || [];
 
-  return NextResponse.json({ history: transformedData });
+  // API側で重複排除（query + (tmdb_id || id) + mediaType で一意）
+  const uniqueHistory = transformedData.filter((item, idx, arr) => {
+    const idKey = item.tmdb_id || item.id || '';
+    const mediaTypeKey = (item.mediaType || '').toLowerCase();
+    if (item.personId && item.personName) {
+      return arr.findIndex(x => x.personId === item.personId && x.personName === item.personName) === idx;
+    } else {
+      return arr.findIndex(x => {
+        const xIdKey = x.tmdb_id || x.id || '';
+        const xMediaTypeKey = (x.mediaType || '').toLowerCase();
+        return x.query === item.query && xIdKey === idKey && xMediaTypeKey === mediaTypeKey;
+      }) === idx;
+    }
+  });
+
+  return NextResponse.json({ history: uniqueHistory });
 }
 
 export async function POST(req: NextRequest) {

@@ -34,10 +34,14 @@ export default function SearchHistoryList({
   // デバッグ用: 履歴データの内容を確認
   console.log('SearchHistoryList - All history data:', searchHistory);
 
-  // 重複排除（query + id + mediaType の組み合わせで一意性を保証）
+  // API側でも重複排除しているが、念のためフロント側でも重複排除を常に適用
+  // query + id + mediaType または personId + personName で一意性を保証
   const uniqueHistory = searchHistory.filter((item, idx, arr) => {
-    const key = `${item.query}-${item.id}-${item.mediaType}`;
-    return arr.findIndex(x => `${x.query}-${x.id}-${x.mediaType}` === key) === idx;
+    if (item.personId && item.personName) {
+      return arr.findIndex(x => x.personId === item.personId && x.personName === item.personName) === idx;
+    } else {
+      return arr.findIndex(x => x.query === item.query && x.id === item.id && x.mediaType === item.mediaType) === idx;
+    }
   });
 
   console.log('SearchHistoryList - Unique history data:', uniqueHistory);
