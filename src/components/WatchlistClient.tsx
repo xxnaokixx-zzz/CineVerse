@@ -50,80 +50,38 @@ const normalizeStatus = (status: string) => {
 function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLORS, STATUS_SELECT_OPTIONS, isDeleteMode, isSelected, onToggleSelection, onToggleFavorite }: any) {
   return (
     <div className="bg-darkgray rounded-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-300 group relative">
-      {/* 削除モードのチェックボックス */}
       {isDeleteMode && (
         <div className="absolute top-2 left-2 z-10">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={onToggleSelection}
-            className="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
-          />
+          <input type="checkbox" checked={isSelected} onChange={onToggleSelection} className="w-5 h-5 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500" />
         </div>
       )}
-
       <div className="relative">
-        <div className="absolute top-2 right-2 z-10">
-          {!isDeleteMode && (
-            <button
-              onClick={() => onRemove(item.id)}
-              className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-colors"
-            >
-              <FaTimes className="text-white text-sm" />
-            </button>
-          )}
-        </div>
         <Link href={`/${item.media_type}/${item.media_id}`} className="block group">
           {item.details && item.details.poster_path ? (
-            <Image
-              className="w-full aspect-[2/3] object-cover"
-              src={`https://image.tmdb.org/t/p/w500${item.details.poster_path}`}
-              alt={item.details.title || item.details.name || ''}
-              width={500}
-              height={750}
-            />
+            <Image className="w-full aspect-[2/3] object-cover" src={`https://image.tmdb.org/t/p/w500${item.details.poster_path}`} alt={item.details.title || item.details.name || ''} width={500} height={750} />
           ) : (
             <div className="w-full aspect-[2/3] bg-lightgray flex items-center justify-center text-gray-400">No Image</div>
           )}
         </Link>
       </div>
-
       <div className="p-4">
         <Link href={`/${item.media_type}/${item.media_id}`} className="block group">
           <h3 className="font-semibold mb-1 truncate hover:underline">{item.details ? (item.details.title || item.details.name) : item.media_id}</h3>
         </Link>
         <p className="text-gray-400 text-sm mb-2">
-          {item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.some((g: any) => g.id === ANIMATION_GENRE_ID)
-            ? 'Anime'
-            : item.media_type === 'tv'
-              ? 'Drama'
-              : item.media_type}
+          {item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.some((g: any) => g.id === 16) ? 'Anime' : item.media_type === 'tv' ? 'Drama' : item.media_type}
         </p>
         <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
           <span>追加日: {item.added_at ? new Date(item.added_at).toLocaleDateString() : '-'}</span>
         </div>
-        {/* ステータス選択とお気に入りボタンを横に並べる */}
         {!isDeleteMode && (
           <div className="flex gap-2 items-center mt-2">
-            <select
-              className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`}
-              value={item.status || 'Unselected'}
-              onChange={e => onStatusChange(item.id, e.target.value)}
-            >
+            <select className={`px-2 py-1 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`} value={item.status || 'Unselected'} onChange={e => onStatusChange(item.id, e.target.value)}>
               <option value="Unselected">ステータスを選択</option>
-              {STATUS_SELECT_OPTIONS.filter((opt: { label: string; value: string }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+              {STATUS_SELECT_OPTIONS.filter((opt: { value: string; }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
-            <button
-              onClick={() => onToggleFavorite(item.id)}
-              className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}
-            >
-              {favorites[item.id] ? (
-                <FaHeart className="text-white text-sm" />
-              ) : (
-                <FaRegHeart className="text-white text-sm" />
-              )}
+            <button onClick={() => onToggleFavorite(item.id)} className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
+              {favorites[item.id] ? <FaHeart className="text-white text-sm" /> : <FaRegHeart className="text-white text-sm" />}
             </button>
           </div>
         )}

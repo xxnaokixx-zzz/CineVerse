@@ -12,8 +12,7 @@ const jost = Jost({
 });
 
 const kosugi = Kosugi({
-  // @ts-ignore
-  subsets: ["japanese", "latin"],
+  subsets: ["latin"],
   weight: "400",
   display: 'swap',
   variable: '--font-kosugi',
