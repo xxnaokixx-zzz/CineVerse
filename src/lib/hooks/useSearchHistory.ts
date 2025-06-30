@@ -15,6 +15,7 @@ export interface SearchHistoryItem {
   cast?: string[];
   crew?: string[];
   id?: number;
+  tmdb_id?: number;
   mediaType?: string;
   // 人物検索用のフィールド
   personId?: number;
@@ -131,92 +132,7 @@ function useLocalSearchHistory() {
   };
 }
 
-// ラッパーフック
+// Supabaseクラウド履歴のみを返す
 export const useSearchHistory = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const cloud = useCloudSearchHistory();
-  const local = useLocalSearchHistory();
-  const [migrated, setMigrated] = useState(false);
-
-  useEffect(() => {
-    const checkLoginAndMigrate = async () => {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      const loggedIn = !!session?.user;
-      setIsLoggedIn(loggedIn);
-
-      // ログイン直後かつ未マイグレーションならlocalStorage→Supabaseへ移行
-      if (loggedIn && !migrated) {
-        console.log('Migration disabled for debugging - skipping localStorage to Supabase migration');
-        setMigrated(true);
-
-        // マイグレーション処理を一時的にコメントアウト
-        /*
-        const localHistoryRaw = localStorage.getItem(SEARCH_HISTORY_KEY);
-        if (localHistoryRaw) {
-          try {
-            const localHistory = JSON.parse(localHistoryRaw);
-            if (Array.isArray(localHistory) && localHistory.length > 0) {
-              console.log('Starting migration of', localHistory.length, 'items to Supabase');
-
-              // 1件ずつSupabaseへPOSTし、全て成功した場合のみlocalStorageを消す
-              const results = await Promise.all(localHistory.map(async (item, index) => {
-                try {
-                  console.log(`Migrating item ${index + 1}:`, item);
-                  const response = await fetch('/api/search-history', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(item),
-                  });
-
-                  if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error(`Migration failed for item ${index + 1}:`, {
-                      status: response.status,
-                      statusText: response.statusText,
-                      error: errorText,
-                      item: item
-                    });
-                  } else {
-                    console.log(`Successfully migrated item ${index + 1}`);
-                  }
-
-                  return response;
-                } catch (error) {
-                  console.error(`Migration error for item ${index + 1}:`, error);
-                  return { ok: false, error };
-                }
-              }));
-
-              const allSuccess = results.every(res => res.ok);
-              console.log('Migration results:', {
-                total: results.length,
-                successful: results.filter(res => res.ok).length,
-                failed: results.filter(res => !res.ok).length
-              });
-
-              if (allSuccess) {
-                localStorage.removeItem(SEARCH_HISTORY_KEY);
-                console.log('Migration completed successfully, localStorage cleared');
-              } else {
-                // 失敗時はlocalStorageを残す
-                console.error('Some search history items failed to migrate to Supabase.');
-              }
-            }
-          } catch (e) {
-            console.error('Migration parsing error:', e);
-          }
-        }
-        */
-      }
-    };
-    checkLoginAndMigrate();
-    // eslint-disable-next-line
-  }, [isLoggedIn, migrated]);
-
-  if (isLoggedIn === null || (isLoggedIn && !migrated)) {
-    // ログイン判定中やマイグレーション中はlocalStorage版を返す
-    return local;
-  }
-  return isLoggedIn ? cloud : local;
+  return useCloudSearchHistory();
 }; 

@@ -160,11 +160,14 @@ export async function DELETE(req: NextRequest) {
   const tmdb_id = searchParams.get('tmdb_id');
   const timestamp = searchParams.get('timestamp');
   const all = searchParams.get('all');
+  const personId = searchParams.get('personId');
 
   let queryBuilder = supabase.from('search_history').delete().eq('user_id', user.id);
 
   if (all === 'true') {
     // No additional filters needed for 'all'
+  } else if (personId) {
+    queryBuilder = queryBuilder.eq('person_id', personId);
   } else if (id) {
     queryBuilder = queryBuilder.eq('id', id);
   } else if (tmdb_id) {
@@ -173,7 +176,7 @@ export async function DELETE(req: NextRequest) {
     // timestampは文字列として渡ってくるので数値に変換
     queryBuilder = queryBuilder.eq('timestamp', Number(timestamp));
   } else {
-    return NextResponse.json({ error: 'Specify id, tmdb_id, timestamp, or all=true' }, { status: 400 });
+    return NextResponse.json({ error: 'Specify personId, id, tmdb_id, timestamp, or all=true' }, { status: 400 });
   }
 
   console.log('DELETE /api/search-history - Executing query with params:', { id, tmdb_id, timestamp, all });

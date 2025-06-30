@@ -32,7 +32,7 @@ const SearchPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 検索履歴機能
-  const { searchHistory, addToHistory, addPersonToHistory, removeFromHistory, clearHistory } = useSearchHistory();
+  const { searchHistory, removeFromHistory, clearHistory } = useSearchHistory();
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -110,26 +110,6 @@ const SearchPage = () => {
           } else if ('name' in first && first.name) {
             officialTitle = first.name;
           }
-          addToHistory(
-            officialTitle || searchTerm.trim(),
-            imageUrl,
-            rating,
-            year,
-            officialTitle,
-            cast,
-            crew,
-            first.id,
-            first.media_type
-          );
-          console.log('SearchPage - Saved to history:', {
-            query: officialTitle || searchTerm.trim(),
-            id: first.id,
-            mediaType: first.media_type,
-            officialTitle,
-            imageUrl,
-            rating,
-            year
-          });
         }
       } else if (searchType === 'person_works') {
         const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);
@@ -173,17 +153,6 @@ const SearchPage = () => {
           setPersonWorks([]);
           setPersonWorksError('該当する人物が見つかりませんでした');
         }
-        addToHistory(
-          officialTitle || searchTerm.trim(),
-          imageUrl,
-          rating,
-          year,
-          officialTitle,
-          cast,
-          crew,
-          personWorksTarget ? personWorksTarget.id : undefined,
-          personWorksTarget ? personWorksTarget.media_type || 'person' : 'person'
-        );
       } else if (searchType === 'person_search') {
         const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);
         const personData = await personRes.json();
@@ -212,17 +181,6 @@ const SearchPage = () => {
           setPersonCandidates([]);
           setPersonWorksError('該当する人物が見つかりませんでした');
         }
-        addToHistory(
-          officialTitle || searchTerm.trim(),
-          imageUrl,
-          rating,
-          year,
-          officialTitle,
-          cast,
-          crew,
-          personCandidates[0] ? personCandidates[0].id : undefined,
-          personCandidates[0] ? personCandidates[0].media_type || 'person' : 'person'
-        );
       } else if (searchType === 'director_works') {
         const personRes = await fetch(`https://api.themoviedb.org/3/search/person?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}&query=${encodeURIComponent(searchTerm.trim())}&language=ja-JP`);
         const personData = await personRes.json();
@@ -265,76 +223,12 @@ const SearchPage = () => {
           setPersonWorks([]);
           setPersonWorksError('該当する人物が見つかりませんでした');
         }
-        addToHistory(
-          officialTitle || searchTerm.trim(),
-          imageUrl,
-          rating,
-          year,
-          officialTitle,
-          cast,
-          crew,
-          personWorksTarget ? personWorksTarget.id : undefined,
-          personWorksTarget ? personWorksTarget.media_type || 'person' : 'person'
-        );
       }
     } catch (err) {
       setResults([]);
       setPersonWorks([]);
       setPersonWorksError('検索中にエラーが発生しました');
     } finally {
-      // 検索履歴に追加（画像・正式タイトルも）
-      if (searchType === 'work' && first) {
-        addToHistory(searchTerm.trim(), imageUrl, rating, year, officialTitle, cast, crew, first.id, first.media_type);
-      } else if (searchType === 'person_works' || searchType === 'person_search' || searchType === 'director_works') {
-        // 人物検索の場合は、候補が1人の場合のみ履歴に保存
-        if (searchType === 'person_search' && personCandidates.length === 1) {
-          const person = personCandidates[0];
-          const personKnownFor = person.known_for?.map((work: any) => ({
-            id: work.id,
-            title: work.title || work.name || '',
-            mediaType: work.media_type,
-            posterPath: work.poster_path || undefined,
-          })) || [];
-
-          addPersonToHistory(
-            person.id,
-            person.name,
-            person.known_for_department || 'Actor',
-            personKnownFor,
-            person.profile_path || undefined
-          );
-        } else if (searchType === 'person_works' && personWorksTarget) {
-          const personKnownFor = personWorks.slice(0, 4).map((work: any) => ({
-            id: work.id,
-            title: work.title || work.name || '',
-            mediaType: work.media_type,
-            posterPath: work.poster_path || undefined,
-          }));
-
-          addPersonToHistory(
-            personWorksTarget.id,
-            personWorksTarget.name,
-            personWorksTarget.known_for_department || 'Actor',
-            personKnownFor,
-            personWorksTarget.profile_path || undefined
-          );
-        } else if (searchType === 'director_works' && personWorksTarget) {
-          const personKnownFor = personWorks.slice(0, 4).map((work: any) => ({
-            id: work.id,
-            title: work.title || work.name || '',
-            mediaType: work.media_type,
-            posterPath: work.poster_path || undefined,
-          }));
-
-          addPersonToHistory(
-            personWorksTarget.id,
-            personWorksTarget.name,
-            personWorksTarget.known_for_department || 'Director',
-            personKnownFor,
-            personWorksTarget.profile_path || undefined
-          );
-        }
-      }
       setShowSearchHistory(false);
       setSearched(true);
       setIsLoading(false);
@@ -488,44 +382,8 @@ const SearchPage = () => {
                       type="button"
                       onClick={async () => {
                         if (item.media_type === 'movie' || item.media_type === 'tv') {
-                          // 作品検索履歴に保存
-                          const imageUrl = item.poster_path ? getImageUrl(item.poster_path) : undefined;
-                          const rating = item.vote_average ? item.vote_average.toFixed(1) : undefined;
-                          const year = item.release_date
-                            ? new Date(item.release_date).getFullYear().toString()
-                            : item.first_air_date
-                              ? new Date(item.first_air_date).getFullYear().toString()
-                              : undefined;
-                          const officialTitle = item.title || item.name || '';
-                          addToHistory(
-                            officialTitle,
-                            imageUrl,
-                            rating,
-                            year,
-                            officialTitle,
-                            undefined,
-                            undefined,
-                            item.id,
-                            item.media_type
-                          );
                           router.push(`/${item.media_type}/${item.id}`);
                         } else if (item.media_type === 'person') {
-                          // 人物検索履歴に保存
-                          const personKnownFor = item.known_for?.map((work: any) => ({
-                            id: work.id,
-                            title: work.title || work.name || '',
-                            mediaType: work.media_type,
-                            posterPath: work.poster_path || undefined,
-                          })) || [];
-
-                          addPersonToHistory(
-                            item.id,
-                            item.name,
-                            item.known_for_department || 'Actor',
-                            personKnownFor,
-                            item.profile_path || undefined
-                          );
-
                           router.push(`/person/${item.id}`);
                         }
                       }}
@@ -557,22 +415,6 @@ const SearchPage = () => {
                       key={item.id}
                       type="button"
                       onClick={async () => {
-                        // 人物検索履歴に保存
-                        const personKnownFor = item.known_for?.map((work: any) => ({
-                          id: work.id,
-                          title: work.title || work.name || '',
-                          mediaType: work.media_type,
-                          posterPath: work.poster_path || undefined,
-                        })) || [];
-
-                        addPersonToHistory(
-                          item.id,
-                          item.name,
-                          item.known_for_department || 'Actor',
-                          personKnownFor,
-                          item.profile_path || undefined
-                        );
-
                         router.push(`/person/${item.id}`);
                       }}
                       className="flex items-center gap-3 w-full px-4 py-2 transition-colors border-b border-gray-700 last:border-b-0 hover:bg-primary/20 focus:bg-primary/20"
@@ -615,6 +457,7 @@ const SearchPage = () => {
                     onRemoveHistory={removeFromHistory}
                     onClearHistory={clearHistory}
                     isVisible={true}
+                    searchType={searchType}
                   />
                 </div>
               </section>
@@ -634,6 +477,7 @@ const SearchPage = () => {
                   onRemoveHistory={removeFromHistory}
                   onClearHistory={clearHistory}
                   isVisible={true}
+                  searchType={searchType}
                 />
               </div>
             </section>

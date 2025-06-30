@@ -11,6 +11,8 @@ import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
 import { createClient } from '@/lib/supabase/client';
 import AIAssistantButton from '@/components/AIAssistantButton';
+import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
+import CommentSection, { CommentSectionHandle } from '@/components/CommentSection';
 
 type PageProps = {
   params: Promise<{
@@ -115,6 +117,9 @@ export default function TVShowDetailPage({ params }: PageProps) {
   const [justWatchLoading, setJustWatchLoading] = useState(false);
   const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   const router = useRouter();
+  const { addToHistory } = useSearchHistory();
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const commentListRef = React.useRef<CommentSectionHandle>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -180,6 +185,20 @@ export default function TVShowDetailPage({ params }: PageProps) {
           } catch (e) {
             setVodProviders([]);
           }
+        }
+
+        if (tvShowData) {
+          addToHistory(
+            tvShowData.name,
+            tvShowData.poster_path ? getImageUrl(tvShowData.poster_path) : undefined,
+            tvShowData.vote_average?.toString() ?? '',
+            tvShowData.first_air_date ? new Date(tvShowData.first_air_date).getFullYear().toString() : '',
+            tvShowData.name,
+            undefined, // cast
+            undefined, // crew
+            tvShowData.id,
+            'tv'
+          );
         }
       } catch (error) {
         console.error("Failed to fetch TV show details:", error);
@@ -390,6 +409,12 @@ export default function TVShowDetailPage({ params }: PageProps) {
                   >
                     <FaSearch className="mr-2" /> 検索
                   </button>
+                  <button
+                    className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
+                    onClick={() => setCommentModalOpen(true)}
+                  >
+                    <FaComment className="mr-2" /> コメント
+                  </button>
                 </div>
               </div>
             </div>
@@ -402,7 +427,11 @@ export default function TVShowDetailPage({ params }: PageProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <h2 className="text-2xl font-bold mb-4 text-white">STORY</h2>
-                <p className="text-gray-300 leading-relaxed mb-8">{tvShow.overview}</p>
+                {tvShow.overview ? (
+                  <p className="text-gray-300 leading-relaxed mb-8">{tvShow.overview}</p>
+                ) : (
+                  <p className="text-gray-400 leading-relaxed mb-8">ストーリー情報が取得できませんでした。</p>
+                )}
 
                 {credits && credits.cast.length > 0 && (
                   <div className="mb-8">
@@ -432,6 +461,12 @@ export default function TVShowDetailPage({ params }: PageProps) {
                         </Link>
                       ))}
                     </div>
+                  </div>
+                )}
+                {(!credits || !credits.cast || credits.cast.length === 0) && (
+                  <div className="mb-8">
+                    <h2 className="text-2xl font-bold mb-4">CAST & CREW</h2>
+                    <p className="text-gray-400 leading-relaxed mb-8">キャスト情報が取得できませんでした。</p>
                   </div>
                 )}
               </div>
@@ -480,6 +515,20 @@ export default function TVShowDetailPage({ params }: PageProps) {
             </div>
           </section>
         )}
+
+        {/* コメントセクション */}
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-6 text-white">コメント</h2>
+            <CommentSection
+              ref={commentListRef}
+              mediaType="tv"
+              mediaId={(tvShow?.id ?? id).toString()}
+              showListOnly
+              variant="section"
+            />
+          </div>
+        </section>
       </main>
 
       {trailer && (
@@ -533,6 +582,20 @@ export default function TVShowDetailPage({ params }: PageProps) {
               </div>
             ) : null}
           </div>
+        </div>
+      )}
+      {commentModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50">
+          <CommentSection
+            mediaType="tv"
+            mediaId={(tvShow?.id ?? id).toString()}
+            onCommentPosted={() => {
+              setCommentModalOpen(false);
+              commentListRef.current?.reload();
+            }}
+            onClose={() => setCommentModalOpen(false)}
+            variant="modal"
+          />
         </div>
       )}
     </>

@@ -5,10 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { PersonDetails, PersonCombinedCredits, PersonExternalIds, PersonCredit, getImageUrl } from '@/services/movieService';
 import MovieCard from '@/components/MovieCard';
-import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare, FaSearch } from 'react-icons/fa';
+import { FaStar, FaInstagram, FaTwitter, FaGlobe, FaUser, FaFilm, FaBookmark, FaShare, FaSearch, FaComment } from 'react-icons/fa';
 import AIAssistantButton from '@/components/AIAssistantButton';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
+import CommentSection, { CommentSectionHandle } from '@/components/CommentSection';
 
 interface PersonClientPageProps {
   person: PersonDetails;
@@ -26,6 +27,8 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
   const { addPersonToHistory } = useSearchHistory();
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const commentListRef = React.useRef<CommentSectionHandle>(null);
 
   useEffect(() => {
     const personKnownFor = knownFor.map(credit => ({
@@ -103,6 +106,12 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                       onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(person.name)}`, '_blank', 'noopener,noreferrer')}
                     >
                       <FaSearch className="mr-2" /> 検索
+                    </button>
+                    <button
+                      className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
+                      onClick={() => setCommentModalOpen(true)}
+                    >
+                      <FaComment className="mr-2" /> コメント
                     </button>
                   </div>
                   <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mb-4">
@@ -213,6 +222,33 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                     </button>
                   )}
                 </div>
+
+                {/* コメントセクション */}
+                <section className="py-12">
+                  <div className="container mx-auto px-4">
+                    <h2 className="text-2xl font-bold mb-6 text-white">コメント</h2>
+                    <CommentSection
+                      ref={commentListRef}
+                      mediaType="person"
+                      mediaId={person.id.toString()}
+                      showListOnly
+                    />
+                  </div>
+                </section>
+                {commentModalOpen && (
+                  <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50">
+                    <CommentSection
+                      mediaType="person"
+                      mediaId={person.id.toString()}
+                      onCommentPosted={() => {
+                        setCommentModalOpen(false);
+                        commentListRef.current?.reload();
+                      }}
+                      onClose={() => setCommentModalOpen(false)}
+                      variant="modal"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="lg:col-span-1">

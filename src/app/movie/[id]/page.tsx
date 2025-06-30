@@ -10,6 +10,8 @@ import MovieCard from '@/components/MovieCard';
 import TrailerModal from '@/components/TrailerModal';
 import { createClient } from '@/lib/supabase/client';
 import AIAssistantButton from '@/components/AIAssistantButton';
+import { useSearchHistory } from '@/lib/hooks/useSearchHistory';
+import CommentSection, { CommentSectionHandle } from '@/components/CommentSection';
 
 type PageProps = {
   params: Promise<{
@@ -112,6 +114,9 @@ export default function MovieDetailPage({ params }: PageProps) {
   const [collectionMovies, setCollectionMovies] = useState<Movie[]>([]);
   const [justWatchLinks, setJustWatchLinks] = useState<any[]>([]);
   const [justWatchLoading, setJustWatchLoading] = useState(false);
+  const { addToHistory } = useSearchHistory();
+  const [commentModalOpen, setCommentModalOpen] = useState(false);
+  const commentListRef = React.useRef<CommentSectionHandle>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -178,6 +183,20 @@ export default function MovieDetailPage({ params }: PageProps) {
           }
         } else {
           setCollectionMovies([]);
+        }
+
+        if (movieData) {
+          addToHistory(
+            movieData.title,
+            movieData.poster_path ? getImageUrl(movieData.poster_path) : undefined,
+            movieData.vote_average?.toString() ?? '',
+            movieData.release_date ? new Date(movieData.release_date).getFullYear().toString() : '',
+            movieData.title,
+            undefined, // cast
+            undefined, // crew
+            movieData.id,
+            'movie'
+          );
         }
       } catch (error) {
         console.error("Failed to fetch movie details:", error);
@@ -384,6 +403,12 @@ export default function MovieDetailPage({ params }: PageProps) {
                   >
                     <FaSearch className="mr-2" /> 検索
                   </button>
+                  <button
+                    className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
+                    onClick={() => setCommentModalOpen(true)}
+                  >
+                    <FaComment className="mr-2" /> コメント
+                  </button>
                 </div>
               </div>
             </div>
@@ -395,34 +420,42 @@ export default function MovieDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-white">
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-bold mb-4">STORY</h2>
-              <p className="text-gray-400 leading-relaxed mb-8">{movie.overview}</p>
+              {movie.overview ? (
+                <p className="text-gray-400 leading-relaxed mb-8">{movie.overview}</p>
+              ) : (
+                <p className="text-gray-400 leading-relaxed mb-8">ストーリー情報が取得できませんでした。</p>
+              )}
 
               <h2 className="text-2xl font-bold mb-4">CAST & CREW</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {credits?.cast.slice(0, 8).map((actor) => (
-                  <Link key={actor.id} href={`/person/${actor.id}`} className="block group">
-                    <div className="bg-darkgray p-3 rounded-lg text-center transition-colors hover:bg-lightgray">
-                      <div className="w-24 h-24 rounded-full mx-auto mb-2 overflow-hidden bg-secondary">
-                        {actor.profile_path ? (
-                          <Image
-                            src={getImageUrl(actor.profile_path)}
-                            alt={actor.name}
-                            width={96}
-                            height={96}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <FaUser className="text-4xl text-gray-400" />
-                          </div>
-                        )}
+              {credits?.cast && credits.cast.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {credits.cast.slice(0, 8).map((actor) => (
+                    <Link key={actor.id} href={`/person/${actor.id}`} className="block group">
+                      <div className="bg-darkgray p-3 rounded-lg text-center transition-colors hover:bg-lightgray">
+                        <div className="w-24 h-24 rounded-full mx-auto mb-2 overflow-hidden bg-secondary">
+                          {actor.profile_path ? (
+                            <Image
+                              src={getImageUrl(actor.profile_path)}
+                              alt={actor.name}
+                              width={96}
+                              height={96}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <FaUser className="text-4xl text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="font-semibold text-sm group-hover:text-primary">{actor.name}</p>
+                        <p className="text-xs text-gray-400">{actor.character}</p>
                       </div>
-                      <p className="font-semibold text-sm group-hover:text-primary">{actor.name}</p>
-                      <p className="text-xs text-gray-400">{actor.character}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 leading-relaxed mb-8">キャスト情報が取得できませんでした。</p>
+              )}
             </div>
 
             <div>
@@ -462,6 +495,19 @@ export default function MovieDetailPage({ params }: PageProps) {
             </div>
           </section>
         )}
+
+        {/* コメントセクション */}
+        <section className="py-12">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-6 text-white">コメント</h2>
+            <CommentSection
+              ref={commentListRef}
+              mediaType="movie"
+              mediaId={(movie?.id ?? id).toString()}
+              showListOnly
+            />
+          </div>
+        </section>
       </main>
 
       <TrailerModal isOpen={isModalOpen} videoKey={trailer?.key || null} onClose={() => setIsModalOpen(false)} />
@@ -520,6 +566,20 @@ export default function MovieDetailPage({ params }: PageProps) {
               </div>
             )}
           </div>
+        </div>
+      )}
+      {commentModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur flex items-center justify-center z-50">
+          <CommentSection
+            mediaType="movie"
+            mediaId={(movie?.id ?? id).toString()}
+            onCommentPosted={() => {
+              setCommentModalOpen(false);
+              commentListRef.current?.reload();
+            }}
+            onClose={() => setCommentModalOpen(false)}
+            variant="modal"
+          />
         </div>
       )}
     </>

@@ -129,9 +129,30 @@ export const useCloudSearchHistory = () => {
       return;
     }
 
-    // 削除用のidentifierを決定（優先順位: id > tmdb_id > timestamp）
+    // 作品系（tmdb_id+mediaTypeが存在する場合）は同じtmdb_id+mediaTypeの履歴を全て削除
+    if (target.tmdb_id && target.mediaType) {
+      // 同じtmdb_id+mediaTypeの履歴を全て取得
+      const sameItems = searchHistory.filter(item => item.tmdb_id === target.tmdb_id && item.mediaType === target.mediaType);
+      for (const item of sameItems) {
+        let identifier = `tmdb_id=${item.tmdb_id}&media_type=${item.mediaType}`;
+        console.log('Deleting by tmdb_id+mediaType:', identifier);
+        try {
+          const response = await fetch(`/api/search-history?${identifier}`, { method: 'DELETE' });
+          const result = await response.json();
+          console.log('Delete API response:', { ok: response.ok, status: response.status, result });
+        } catch (error) {
+          console.error('Error deleting history item:', error);
+        }
+      }
+      await fetchHistory();
+      return;
+    }
+
+    // 人物系やその他はpersonId→id→tmdb_id→timestampの順で削除
     let identifier;
-    if (target.id) {
+    if (target.personId) {
+      identifier = `personId=${target.personId}`;
+    } else if (target.id) {
       identifier = `id=${target.id}`;
     } else if (target.tmdb_id) {
       identifier = `tmdb_id=${target.tmdb_id}`;
@@ -145,22 +166,15 @@ export const useCloudSearchHistory = () => {
       const response = await fetch(`/api/search-history?${identifier}`, { method: 'DELETE' });
       const result = await response.json();
       console.log('Delete API response:', { ok: response.ok, status: response.status, result });
-
       if (!response.ok) {
         console.error('Failed to delete history item:', result);
         return;
       }
-
-      // 楽観的更新
-      setSearchHistory(prev => prev.filter(item => item.timestamp !== timestamp));
+      await fetchHistory();
     } catch (error) {
       console.error('Error deleting history item:', error);
       return;
     }
-
-    // サーバーからの最新の状態で履歴を再同期
-    console.log('Fetching updated history after deletion');
-    await fetchHistory();
   };
 
   // 全履歴削除

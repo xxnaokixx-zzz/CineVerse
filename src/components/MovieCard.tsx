@@ -6,13 +6,13 @@ import { FaStar, FaFilm, FaTv, FaTicketAlt } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import TheaterSearchModal from './TheaterSearchModal';
 
-type MovieCardProps = {
+export type MovieCardProps = {
   id: number;
   imageUrl: string;
   title: string;
   rating: string;
   year: string;
-  mediaType: 'movie' | 'tv' | 'person';
+  mediaType: 'movie' | 'tv' | 'anime' | 'drama' | 'person';
   releaseDate?: string;
   isNowPlaying?: boolean;
 };
