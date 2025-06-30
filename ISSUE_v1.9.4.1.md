@@ -1,24 +1,43 @@
-# Issue for v1.9.4.1: Font Customization & Watchlist UX Enhancements
+# CineVerse v1.9.4.1 リリースノート
 
-**Version:** 1.9.4.1
-**Status:** Completed & Released
+## 🎉 リリース概要
+
+CineVerse v1.9.4.1では、**アプリケーション全体のフォントを刷新し、より洗練されたビジュアルを提供**するとともに、**ウォッチリストに年単位の絞り込み機能を追加**して利便性を向上させました。
+
+## ✨ 新機能・改善
+
+### 🔠 フォントの全面的刷新
+- アプリケーション全体の基本フォントを変更し、視認性とデザイン性を向上。
+- 英数字にはモダンな「Jost」、日本語にはクリーンな「Kosugi」フォントを導入し、国内外のユーザーにとって読みやすいタイポグラフィを実現。
+
+### 📅 ウォッチリストの年別フィルター機能
+- ウォッチリストページに「年で絞り込み」ドロップダウンを新設。
+- 「今年」「去年」「一昨年」および、過去に追加された全ての年でアイテムを絞り込めるようになり、大規模なリストの管理が容易に。
+- このフィルターは、既存のステータスフィルターやカテゴリフィルターと組み合わせて使用可能。
+
+### 🎨 UI/UXの微調整
+- **ウォッチリスト統計の視認性向上**: ウォッチリストページ上部の統計カウンター（To Watch, Watchingなど）が、常に各ステータスに対応する色で表示されるように変更。アクティブなフィルターがより直感的に分かるようになりました。
+
+## 📊 変更統計
+
+- **変更ファイル数**: 5ファイル
+- **主な変更ファイル**:
+  - `src/app/layout.tsx` - フォント読み込みとグローバル適用
+  - `tailwind.config.js` - 新しいフォントファミリーの定義
+  - `src/app/globals.css` - グローバルなフォントスタイルの設定
+  - `src/components/WatchlistClient.tsx` - 年フィルター機能の実装と統計UIの修正
+
+## 🎯 ユーザー体験の向上
+
+1. **洗練されたビジュアル**: 新フォント導入により、モダンで読みやすいインターフェースを提供。
+2. **効率的なリスト管理**: 年フィルターによって、特定の期間に追加した作品を簡単に見つけられるように。
+3. **直感的な状態把握**: 統計カウンターの常時色表示により、現在のフィルタリング状況が一目で分かります。
 
 ---
 
-### Description
+**リリース日**: 2024年7月28日
+**バージョン**: v1.9.4.1
+**前バージョン**: v1.9.4
 
-This version focused on improving the user experience through font customization and adding a new filtering capability to the watchlist.
-
-### Key Tasks Completed:
-
-- **Font Implementation:**
-  - [x] Integrated "Jost" for Latin characters.
-  - [x] Integrated "Kosugi" for Japanese characters.
-  - [x] Ensured consistent font application across the entire site.
-
-- **Watchlist Enhancements:**
-  - [x] Added a "Filter by Year" dropdown next to the existing sort options.
-  - [x] Implemented the logic to filter watchlist items based on the selected year.
-  - [x] Updated watchlist statistics UI to always show status colors for better readability.
-
---- 
+**Developer:** Naoki O.
+**Repository:** [CineVerse on GitHub](https://github.com/xxnaokixx-zzz/CineVerse) 
