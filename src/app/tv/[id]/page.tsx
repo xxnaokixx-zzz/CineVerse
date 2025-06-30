@@ -371,7 +371,7 @@ export default function TVShowDetailPage({ params }: PageProps) {
                     </button>
                   ) : (
                     <button
-                      className={`bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100${adding ? ' opacity-60 cursor-not-allowed' : ''}`}
+                      className={`bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-white${adding ? ' opacity-60 cursor-not-allowed' : ''}`}
                       onClick={handleAddToWatchlist}
                       disabled={adding}
                     >
