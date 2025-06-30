@@ -123,7 +123,7 @@ export default function HeroCarousel({ movies }: HeroCarouselProps) {
                           <FaPlay className="mr-2" /> Watch Trailer
                         </button>
                       )}
-                      <Link href={`/movie/${slide.id}`} className="bg-transparent border border-white hover:bg-white hover:text-dark transition-colors px-6 py-3 rounded-full flex items-center drop-shadow">
+                      <Link href={`/movie/${slide.id}`} className="bg-transparent border border-white hover:bg-white hover:text-black transition-colors px-6 py-3 rounded-full flex items-center drop-shadow">
                         <FaInfoCircle className="mr-2" /> More Info
                       </Link>
                     </div>
