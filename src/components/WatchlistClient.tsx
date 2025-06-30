@@ -69,26 +69,28 @@ function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLOR
           )}
         </Link>
       </div>
-      <div className="p-4">
+      <div className="p-4 relative">
         <Link href={`/${item.media_type}/${item.media_id}`} className="block group">
-          <h3 className="font-semibold mb-1 truncate hover:underline">{item.details ? (item.details.title || item.details.name) : item.media_id}</h3>
+          <h3 className="font-semibold mb-2 truncate hover:underline">{item.details ? (item.details.title || item.details.name) : item.media_id}</h3>
         </Link>
-        <p className="text-gray-400 text-sm mb-2">
+        <p className="text-gray-400 text-sm">
           {item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.some((g: any) => g.id === 16) ? 'Anime' : item.media_type === 'tv' ? 'Drama' : item.media_type}
         </p>
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
           <span>追加日: {item.added_at ? new Date(item.added_at).toLocaleDateString() : '-'}</span>
         </div>
         {!isDeleteMode && (
-          <div className="flex gap-2 items-center mt-2">
-            <select className={`h-8 px-2 text-xs rounded-full text-white block flex-1 text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`} value={item.status || 'Unselected'} onChange={e => onStatusChange(item.id, e.target.value)}>
-              <option value="Unselected">ステータスを選択</option>
-              {STATUS_SELECT_OPTIONS.filter((opt: { value: string; }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
-            <button onClick={() => onToggleFavorite(item.id)} className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
+          <>
+            <div className="pr-10">
+              <select className={`h-8 px-2 text-xs rounded-full text-white block w-full text-center focus:outline-none appearance-none ${STATUS_COLORS[item.status] || 'bg-gray-500'}`} value={item.status || 'Unselected'} onChange={e => onStatusChange(item.id, e.target.value)}>
+                <option value="Unselected">ステータスを選択</option>
+                {STATUS_SELECT_OPTIONS.filter((opt: { value: string; }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              </select>
+            </div>
+            <button onClick={() => onToggleFavorite(item.id)} className={`absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
               {favorites[item.id] ? <FaHeart className="text-white text-sm" /> : <FaRegHeart className="text-white text-sm" />}
             </button>
-          </div>
+          </>
         )}
       </div>
     </div>
@@ -301,33 +303,33 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-6">
-          <button onClick={() => setStatus('all')} className={`text-center transition-colors pb-2 ${status === 'all' ? 'text-white border-b-2 border-white' : 'text-gray-400 hover:text-white border-b-2 border-transparent'}`}>
+          <button onClick={() => setStatus('all')} className={`text-center transition-colors ${status === 'all' ? 'text-white' : 'text-white/70 hover:text-white'}`}>
             <div className={status === 'all' ? 'animate-bounce-y' : ''}>
               <div className="text-2xl font-bold">{total}</div>
               <div className="text-xs">All</div>
             </div>
           </button>
           <div className="border-l border-gray-600 h-10"></div>
-          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors pb-2 ${status === 'Want to Watch' ? 'text-blue-500 border-b-2 border-blue-500' : 'text-blue-500/70 hover:text-blue-500 border-b-2 border-transparent'}`}>
+          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors ${status === 'Want to Watch' ? 'text-blue-500' : 'text-blue-500/70 hover:text-blue-500'}`}>
             <div className={status === 'Want to Watch' ? 'animate-bounce-y' : ''}>
               <div className="text-2xl font-bold">{toWatch}</div>
               <div className="text-xs">To Watch</div>
             </div>
           </button>
-          <button onClick={() => setStatus('Watching')} className={`text-center transition-colors pb-2 ${status === 'Watching' ? 'text-green-600 border-b-2 border-green-600' : 'text-green-600/70 hover:text-green-600 border-b-2 border-transparent'}`}>
+          <button onClick={() => setStatus('Watching')} className={`text-center transition-colors ${status === 'Watching' ? 'text-green-600' : 'text-green-600/70 hover:text-green-600'}`}>
             <div className={status === 'Watching' ? 'animate-bounce-y' : ''}>
               <div className="text-2xl font-bold">{watching}</div>
               <div className="text-xs">Watching</div>
             </div>
           </button>
-          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors pb-2 ${status === 'Watched' ? 'text-yellow-500 border-b-2 border-yellow-500' : 'text-yellow-500/70 hover:text-yellow-500 border-b-2 border-transparent'}`}>
+          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors ${status === 'Watched' ? 'text-yellow-500' : 'text-yellow-500/70 hover:text-yellow-500'}`}>
             <div className={status === 'Watched' ? 'animate-bounce-y' : ''}>
               <div className="text-2xl font-bold">{watched}</div>
               <div className="text-xs">Watched</div>
             </div>
           </button>
           <div className="border-l border-gray-600 h-10"></div>
-          <button onClick={() => setStatus('Favorite')} className={`text-center transition-colors pb-2 ${status === 'Favorite' ? 'text-pink-500 border-b-2 border-pink-500' : 'text-pink-500/70 hover:text-pink-500 border-b-2 border-transparent'}`}>
+          <button onClick={() => setStatus('Favorite')} className={`text-center transition-colors ${status === 'Favorite' ? 'text-pink-500' : 'text-pink-500/70 hover:text-pink-500'}`}>
             <div className={status === 'Favorite' ? 'animate-bounce-y' : ''}>
               <div className="text-2xl font-bold">{favoriteCount}</div>
               <div className="text-xs">Favorite</div>
