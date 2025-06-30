@@ -23,9 +23,9 @@ const CATEGORY_LABELS = [
 
 const STATUS_SELECT_OPTIONS = [
   { label: 'All', value: 'all' },
-  { label: 'Watched', value: 'Watched' },
   { label: 'Want to Watch', value: 'Want to Watch' },
   { label: 'Watching', value: 'Watching' },
+  { label: 'Watched', value: 'Watched' },
   { label: 'Favorite', value: 'Favorite' },
 ];
 
@@ -69,7 +69,7 @@ function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLOR
           )}
         </Link>
       </div>
-      <div className="p-4 relative">
+      <div className="px-3 py-4 relative">
         <Link href={`/${item.media_type}/${item.media_id}`} className="block group">
           <h3 className="font-semibold mb-2 truncate hover:underline">{item.details ? (item.details.title || item.details.name) : item.media_id}</h3>
         </Link>
@@ -87,7 +87,7 @@ function WatchlistItem({ item, onRemove, onStatusChange, favorites, STATUS_COLOR
                 {STATUS_SELECT_OPTIONS.filter((opt: { value: string; }) => opt.value !== 'all' && opt.value !== 'Favorite').map((opt: { label: string; value: string }) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
             </div>
-            <button onClick={() => onToggleFavorite(item.id)} className={`absolute bottom-4 right-4 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
+            <button onClick={() => onToggleFavorite(item.id)} className={`absolute bottom-4 right-3 w-8 h-8 flex items-center justify-center rounded-full transition-colors ${favorites[item.id] ? 'bg-pink-600 hover:bg-pink-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
               {favorites[item.id] ? <FaHeart className="text-white text-sm" /> : <FaRegHeart className="text-white text-sm" />}
             </button>
           </>

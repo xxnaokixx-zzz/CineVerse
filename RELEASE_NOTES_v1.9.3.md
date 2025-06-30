@@ -108,4 +108,49 @@ onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent
 - **二重認証チェック**: ミドルウェアとページレベルの両方で認証を確認
 - **フォールバック機能**: ミドルウェアが動作しない環境でも確実にログイン画面にリダイレクト
 - **デバッグログ**: 認証プロセスの各段階でログを出力し、問題の特定を支援
-- **本番環境対応**: Vercelでの動作を確認し、認証フローが正常に機能することを保証 
+- **本番環境対応**: Vercelでの動作を確認し、認証フローが正常に機能することを保証
+
+# CineVerse v1.9.3.1 リリースノート
+
+## 🎯 リリース目標
+TypeScript型エラー修正・ビルド安定性向上・認証システムの強化（Next.js 15.2.0対応、二重認証チェック、デバッグログ追加）を目的としたホットフィックス。
+
+## 📋 実装タスク
+
+### ✅ 完了済み
+
+#### 🛠️ TypeScript型エラーの修正
+- useSearchParamsのnull安全性を改善
+- 全てのuseSearchParams()使用箇所でオプショナルチェーニングを追加
+
+#### 🏗️ ビルド安定性の向上
+- Next.js 15.2.0の型チェック強化に対応
+- 本番ビルドが正常に完了することを保証
+- TypeScriptエラーによる開発の中断を防止
+
+#### 🔐 認証システムの強化
+- ミドルウェアとページレベルの二重認証チェックを実装
+- ミドルウェアが動作しない場合のフォールバック認証を実装
+- 認証プロセスの詳細ログを追加し、問題の特定を容易に
+- Vercelでの動作を確認し、認証フローが正常に機能することを保証
+
+#### 🐛 修正されたファイル
+- src/app/ai/recommendation/result/AIRecommendationResult.tsx
+- src/app/ai/summary/AISummaryPageClient.tsx
+- src/app/login/LoginClient.tsx
+- src/app/signup-success/SignupSuccessClient.tsx
+- src/components/Header.tsx
+- src/middleware.ts
+- src/app/page.tsx
+
+## 🎉 リリース完了
+- **リリース日**: 2025年6月29日
+- **バージョン**: v1.9.3.1
+
+## 📊 実装統計
+- **変更ファイル数**: 7ファイル
+- **主な修正**: TypeScript型安全性・認証システム強化・ビルド安定化
+
+## 🚀 次のバージョン（v1.9.4）の展望
+- UI/UX改善
+- 検索履歴・認証・パフォーマンスのさらなる強化 

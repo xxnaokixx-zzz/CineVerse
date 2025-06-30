@@ -288,12 +288,14 @@ export default function Header() {
           {mounted ? (
             <>
               {user && (
-                <nav className="hidden md:flex items-center space-x-8 mr-6">
-                  {navLinks.map(link => (
+                <nav className="hidden md:flex items-center space-x-8 mr-8">
+                  {navLinks.map((link) => (
                     <Link
                       key={link.name}
                       href={link.href}
-                      className={`font-medium hover:text-primary transition-colors ${pathname === link.href ? 'text-primary' : ''}`}
+                      className={`font-medium transition-colors cursor-pointer pb-1
+                        ${pathname === link.href ? 'text-primary border-b-2 border-primary' : 'text-white/70 hover:text-white'}
+                      `}
                     >
                       {link.name}
                     </Link>
@@ -301,21 +303,28 @@ export default function Header() {
                   {/* ジャンルボタン */}
                   <button
                     onClick={toggleGenreModal}
-                    className={`font-medium hover:text-primary transition-colors ${isGenrePage(pathname || "") ? 'text-primary' : ''}`}
+                    className={`font-medium transition-colors cursor-pointer pb-1
+                      ${['/movies', '/anime', '/drama'].includes(pathname ?? '') ? 'text-primary border-b-2 border-primary' : 'text-white/70 hover:text-white'}
+                    `}
                   >
-                    <span>Genre</span>
+                    <span>Genres</span>
                   </button>
                   {/* AI機能ボタン */}
                   <button
                     onClick={() => router.push('/ai')}
-                    className="font-medium hover:text-primary transition-colors"
+                    className={`font-medium transition-colors flex items-center space-x-2 cursor-pointer pb-1
+                      ${pathname === '/ai' ? 'text-primary border-b-2 border-primary' : 'text-white/70 hover:text-white'}
+                    `}
                   >
-                    <span>AI機能</span>
+                    <FaRobot />
+                    <span>AI</span>
                   </button>
                   {/* Searchページへのリンク */}
                   <Link
                     href="/search"
-                    className={`font-medium hover:text-primary transition-colors ${pathname === '/search' ? 'text-primary' : ''}`}
+                    className={`font-medium transition-colors cursor-pointer pb-1
+                      ${pathname === '/search' ? 'text-primary border-b-2 border-primary' : 'text-white/70 hover:text-white'}
+                    `}
                   >
                     Search
                   </Link>
@@ -390,50 +399,43 @@ export default function Header() {
           </div>
         )}
 
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-3">
-            {user && (
-              <nav className="flex flex-col space-y-3 pb-3">
-                {navLinks.map(link => (
+        <div className="md:hidden">
+          {mobileMenuOpen && (
+            <div className="absolute top-16 left-0 w-full bg-darkgray p-4">
+              <div className="flex flex-col space-y-4">
+                {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
                     className={`font-medium hover:text-primary transition-colors cursor-pointer ${pathname === link.href ? 'text-primary' : ''}`}
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.name}
                   </Link>
                 ))}
-
-                {/* モバイル用ジャンルボタン */}
                 <button
-                  onClick={toggleGenreModal}
-                  className={`font-medium hover:text-primary transition-colors text-left ${isGenrePage(pathname || "") ? 'text-primary' : ''}`}
+                  onClick={() => {
+                    toggleGenreModal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`font-medium hover:text-primary transition-colors text-left cursor-pointer ${isGenrePage(pathname ?? "") ? 'text-primary' : ''}`}
                 >
                   Genre
                 </button>
-
-                {/* モバイル用AI機能ボタン */}
                 <button
-                  onClick={() => { setMobileMenuOpen(false); router.push('/ai') }}
-                  className="font-medium hover:text-primary transition-colors text-left flex items-center space-x-2"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    router.push('/ai');
+                  }}
+                  className="font-medium hover:text-primary transition-colors text-left flex items-center space-x-2 cursor-pointer"
                 >
+                  <FaRobot />
                   <span>AI機能</span>
                 </button>
-              </nav>
-            )}
-
-            {!user && (
-              <div className="flex flex-col space-y-3 pt-3 border-t border-gray-700">
-                <Link href="/login" className="font-medium hover:text-primary transition-colors">
-                  Login
-                </Link>
-                <Link href="/signup" className="font-medium hover:text-primary transition-colors">
-                  Sign Up
-                </Link>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ジャンル選択モーダル */}
