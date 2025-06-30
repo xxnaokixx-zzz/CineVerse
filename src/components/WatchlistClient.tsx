@@ -7,9 +7,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 const STATUS_COLORS: Record<string, string> = {
-  'Watched': 'bg-blue-500',
-  'Want to Watch': 'bg-yellow-500',
-  'To Watch': 'bg-yellow-500',
+  'Watched': 'bg-yellow-500',
+  'Want to Watch': 'bg-blue-500',
+  'To Watch': 'bg-blue-500',
   'Watching': 'bg-green-600',
   'Dropped': 'bg-red-600',
 };
@@ -30,10 +30,10 @@ const STATUS_SELECT_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { label: 'Date Added (Newest)', value: 'added_at_desc' },
-  { label: 'Date Added (Oldest)', value: 'added_at_asc' },
-  { label: 'Title A-Z', value: 'title_asc' },
-  { label: 'Title Z-A', value: 'title_desc' },
+  { label: '追加日（新しい順）', value: 'added_at_desc' },
+  { label: '追加日（古い順）', value: 'added_at_asc' },
+  { label: 'タイトル昇順（A→Z）', value: 'title_asc' },
+  { label: 'タイトル降順（Z→A）', value: 'title_desc' },
 ];
 
 const ANIMATION_GENRE_ID = 16;
@@ -402,11 +402,11 @@ export default function WatchlistClient({ items }: { items: any[] }) {
             <div className="text-2xl font-bold">{total}</div>
             <div className="text-xs">All</div>
           </button>
-          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors ${status === 'Watched' ? 'text-blue-500' : 'text-blue-500'}`}>
+          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors ${status === 'Watched' ? 'text-yellow-500' : 'text-yellow-500'}`}>
             <div className="text-2xl font-bold">{watched}</div>
             <div className="text-xs">Watched</div>
           </button>
-          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors ${status === 'Want to Watch' ? 'text-yellow-400' : 'text-yellow-400'}`}>
+          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors ${status === 'Want to Watch' ? 'text-blue-500' : 'text-blue-500'}`}>
             <div className="text-2xl font-bold">{toWatch}</div>
             <div className="text-xs">To Watch</div>
           </button>
