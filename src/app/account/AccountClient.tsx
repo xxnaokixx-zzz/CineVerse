@@ -350,7 +350,7 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
               <div className="space-y-6">
                 <div className="bg-darkgray rounded-lg p-6 flex flex-col items-center">
                   <h2 className="text-2xl font-bold mb-3 text-center">Account Statistics</h2>
-                  <div className="flex flex-row justify-center gap-10">
+                  <div className="flex flex-row justify-center items-center gap-6">
                     <button
                       className="text-center transition-colors"
                       onClick={() => router.push('/watchlist?status=all')}
@@ -358,19 +358,13 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
                       <div className="text-2xl font-bold text-white mb-1">{counts.watchlist}</div>
                       <div className="text-xs text-white">All</div>
                     </button>
-                    <button
-                      className="text-center transition-colors"
-                      onClick={() => router.push('/watchlist?status=Watched')}
-                    >
-                      <div className="text-2xl font-bold text-blue-500 mb-1">{counts.watched}</div>
-                      <div className="text-xs text-blue-500">Watched</div>
-                    </button>
+                    <div className="border-l border-gray-400 h-10"></div>
                     <button
                       className="text-center transition-colors"
                       onClick={() => router.push('/watchlist?status=To%20Watch')}
                     >
-                      <div className="text-2xl font-bold text-yellow-500 mb-1">{counts.toWatch}</div>
-                      <div className="text-xs text-yellow-500">To Watch</div>
+                      <div className="text-2xl font-bold text-blue-500 mb-1">{counts.toWatch}</div>
+                      <div className="text-xs text-blue-500">To Watch</div>
                     </button>
                     <button
                       className="text-center transition-colors"
@@ -379,6 +373,14 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
                       <div className="text-2xl font-bold text-green-600 mb-1">{counts.watching}</div>
                       <div className="text-xs text-green-600">Watching</div>
                     </button>
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=Watched')}
+                    >
+                      <div className="text-2xl font-bold text-yellow-500 mb-1">{counts.watched}</div>
+                      <div className="text-xs text-yellow-500">Watched</div>
+                    </button>
+                    <div className="border-l border-gray-400 h-10"></div>
                     <button
                       className="text-center transition-colors"
                       onClick={() => router.push('/watchlist?status=Favorite')}

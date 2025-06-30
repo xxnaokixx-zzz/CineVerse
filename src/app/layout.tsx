@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Jost, Kosugi } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Suspense } from "react";
 
-const inter = Inter({
+const jost = Jost({
   subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
+  display: 'swap',
+  variable: '--font-jost',
+});
+
+const kosugi = Kosugi({
+  // @ts-ignore
+  subsets: ["japanese", "latin"],
+  weight: "400",
+  display: 'swap',
+  variable: '--font-kosugi',
 });
 
 export const metadata: Metadata = {
@@ -22,8 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-dark text-white font-sans">
+    <html lang="ja" className={`${jost.variable} ${kosugi.variable}`}>
+      <body className="bg-dark text-white">
         <Suspense fallback={null}>
           <Header />
         </Suspense>

@@ -151,7 +151,7 @@ const DeleteConfirmationModal = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-        <h3 className="text-lg font-semibold mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-800">{title}</h3>
         <p className="text-gray-600 mb-6">{message}</p>
         <div className="flex justify-end space-x-3">
           <button
@@ -186,80 +186,50 @@ export default function WatchlistClient({ items }: { items: any[] }) {
   }, [initialStatus]);
 
   const [watchlistItems, setWatchlistItems] = useState(items);
-  const [filter, setFilter] = useState<'all' | 'watched' | 'to_watch' | 'watching' | 'favorite'>('all');
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [deleteModal, setDeleteModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => { },
-  });
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { } });
   const [category, setCategory] = useState('all');
   const [sort, setSort] = useState('added_at_desc');
+  const [yearFilter, setYearFilter] = useState('all');
   const [showCount, setShowCount] = useState(12);
-  const [favorites, setFavorites] = useState<Record<string, boolean>>(
-    Object.fromEntries(items.map(item => [item.id, !!item.favorite]))
-  );
+  const [favorites, setFavorites] = useState<Record<string, boolean>>(Object.fromEntries(items.map(item => [item.id, !!item.favorite])));
 
-  // 統計
   const total = watchlistItems.length;
-
-  // デバッグ用に各アイテムのステータスを出力
-  watchlistItems.forEach((item, index) => {
-    console.log(`Item ${index + 1} status check:`, {
-      id: item.id,
-      title: item.details?.title || item.details?.name,
-      status: item.status,
-      statusType: typeof item.status,
-      rawStatus: JSON.stringify(item.status),
-      favorite: favorites[item.id],
-      rawFavorite: JSON.stringify(favorites[item.id])
-    });
-  });
-
-  // ステータスのカウントを厳密に行う
   const watched = watchlistItems.filter(item => normalizeStatus(item.status) === 'watched').length;
   const toWatch = watchlistItems.filter(item => normalizeStatus(item.status) === 'towatch').length;
   const watching = watchlistItems.filter(item => normalizeStatus(item.status) === 'watching').length;
   const favoriteCount = watchlistItems.filter(item => favorites[item.id]).length;
 
-  console.log('Detailed status counts:', {
-    total,
-    watched: {
-      count: watched,
-      items: watchlistItems.filter(item => normalizeStatus(item.status) === 'watched').map(item => ({
-        id: item.id,
-        title: item.details?.title || item.details?.name
-      }))
-    },
-    toWatch: {
-      count: toWatch,
-      items: watchlistItems.filter(item => normalizeStatus(item.status) === 'towatch').map(item => ({
-        id: item.id,
-        title: item.details?.title || item.details?.name
-      }))
-    },
-    watching: {
-      count: watching,
-      items: watchlistItems.filter(item => normalizeStatus(item.status) === 'watching').map(item => ({
-        id: item.id,
-        title: item.details?.title || item.details?.name
-      }))
-    },
-    favorite: {
-      count: favoriteCount,
-      items: watchlistItems.filter(item => favorites[item.id]).map(item => ({
-        id: item.id,
-        title: item.details?.title || item.details?.name
-      }))
-    }
-  });
+  const availableYears = ['all', ...Array.from(new Set(items.map(item => item.added_at ? new Date(item.added_at).getFullYear() : null).filter((year): year is number => year !== null))).sort((a, b) => b - a)];
+
+  const filteredAndSortedItems = watchlistItems
+    .filter(item => {
+      let catOk = true;
+      if (category === 'anime') {
+        catOk = item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.some((g: any) => g.id === ANIMATION_GENRE_ID);
+      } else if (category === 'tv') {
+        catOk = item.media_type === 'tv' && Array.isArray(item.details?.genres) && !item.details.genres.some((g: any) => g.id === ANIMATION_GENRE_ID);
+      } else if (category !== 'all') {
+        catOk = item.media_type === category;
+      }
+
+      const statusOk = status === 'all' || (status === 'Favorite' ? !!favorites[item.id] : normalizeStatus(item.status) === normalizeStatus(status));
+
+      const itemYear = item.added_at ? new Date(item.added_at).getFullYear() : null;
+      const yearOk = yearFilter === 'all' || (itemYear !== null && itemYear.toString() === yearFilter);
+
+      return catOk && statusOk && yearOk;
+    })
+    .sort((a, b) => {
+      if (sort === 'added_at_desc') return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
+      if (sort === 'added_at_asc') return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
+      if (sort === 'title_asc') return (a.details?.title || a.details?.name || '').localeCompare(b.details?.title || b.details?.name || '');
+      if (sort === 'title_desc') return (b.details?.title || b.details?.name || '').localeCompare(a.details?.title || a.details?.name || '');
+      return 0;
+    });
+
+  const displayedItems = filteredAndSortedItems.slice(0, showCount);
 
   const toggleFavorite = async (id: string) => {
     const newFavoriteValue = !favorites[id];
@@ -267,38 +237,6 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     const supabase = createBrowserClient();
     await supabase.from('watchlist_items').update({ favorite: newFavoriteValue }).eq('id', id);
   };
-
-  // フィルタリング
-  let filtered = watchlistItems.filter(item => {
-    let catOk = true;
-    if (category === 'anime') {
-      catOk = item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.some((g: any) => g.id === ANIMATION_GENRE_ID);
-    } else if (category === 'tv') {
-      catOk = item.media_type === 'tv' && Array.isArray(item.details?.genres) && item.details.genres.length > 0 && !item.details.genres.some((g: any) => g.id === ANIMATION_GENRE_ID);
-    } else if (category !== 'all') {
-      catOk = item.media_type === category;
-    }
-    // ステータスフィルタがFavoriteのときはitem.favoriteを参照
-    let statusOk = true;
-    if (status === 'Favorite') {
-      statusOk = !!favorites[item.id];
-    } else if (status !== 'all') {
-      statusOk = normalizeStatus(item.status) === normalizeStatus(status);
-    }
-    return catOk && statusOk;
-  });
-
-  // ソート
-  filtered = filtered.sort((a, b) => {
-    if (sort === 'added_at_desc') return new Date(b.added_at).getTime() - new Date(a.added_at).getTime();
-    if (sort === 'added_at_asc') return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
-    if (sort === 'title_asc') return (a.details?.title || a.details?.name || '').localeCompare(b.details?.title || b.details?.name || '');
-    if (sort === 'title_desc') return (b.details?.title || b.details?.name || '').localeCompare(a.details?.title || a.details?.name || '');
-    return 0;
-  });
-
-  // ページネーション
-  const visible = filtered.slice(0, showCount);
 
   const handleRemove = async (id: number) => {
     const supabase = createBrowserClient();
@@ -338,7 +276,7 @@ export default function WatchlistClient({ items }: { items: any[] }) {
   };
 
   const selectAll = () => {
-    const filteredIds = filtered.map(item => item.id);
+    const filteredIds = filteredAndSortedItems.map(item => item.id);
     setSelectedItems(new Set(filteredIds));
   };
 
@@ -366,12 +304,12 @@ export default function WatchlistClient({ items }: { items: any[] }) {
   const deleteAll = () => {
     setDeleteModal({
       isOpen: true,
-      title: 'すべてのアイテムを削除',
-      message: `ウォッチリストのすべてのアイテム（${filtered.length}個）を削除しますか？この操作は取り消せません。`,
+      title: '表示中のアイテムをすべて削除',
+      message: `表示中のすべてのアイテム（${filteredAndSortedItems.length}個）を削除しますか？この操作は取り消せません。`,
       onConfirm: async () => {
         const supabase = createBrowserClient();
-        await supabase.from('watchlist_items').delete().in('id', filtered.map(item => item.id));
-        setWatchlistItems(prev => prev.filter(item => !filtered.some(f => f.id === item.id)));
+        await supabase.from('watchlist_items').delete().in('id', filteredAndSortedItems.map(item => item.id));
+        setWatchlistItems(prev => prev.filter(item => !filteredAndSortedItems.some(f => f.id === item.id)));
         setSelectedItems(new Set());
         setDeleteModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -392,118 +330,85 @@ export default function WatchlistClient({ items }: { items: any[] }) {
     });
   };
 
+  const loadMore = () => {
+    setShowCount(prev => prev + 12);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 上部統計・フィルターUI */}
       <div className="mb-6 flex flex-row items-center justify-between gap-4">
-        {/* 左カラム：統計ボタン */}
-        <div className="flex gap-4 items-center">
-          <button onClick={() => setStatus('all')} className={`text-center transition-colors ${status === 'all' ? 'text-primary' : 'text-primary'}`}>
+        <div className="flex items-center gap-6">
+          <button onClick={() => setStatus('all')} className={`text-center transition-colors ${status === 'all' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             <div className="text-2xl font-bold">{total}</div>
             <div className="text-xs">All</div>
           </button>
-          <button onClick={() => setStatus('Watched')} className={`text-center transition-colors ${status === 'Watched' ? 'text-yellow-500' : 'text-yellow-500'}`}>
-            <div className="text-2xl font-bold">{watched}</div>
-            <div className="text-xs">Watched</div>
-          </button>
-          <button onClick={() => setStatus('Want to Watch')} className={`text-center transition-colors ${status === 'Want to Watch' ? 'text-blue-500' : 'text-blue-500'}`}>
+          <div className="border-l border-gray-600 h-10"></div>
+          <button onClick={() => setStatus('Want to Watch')} className="text-center transition-colors text-blue-500 hover:text-blue-400">
             <div className="text-2xl font-bold">{toWatch}</div>
             <div className="text-xs">To Watch</div>
           </button>
-          <button onClick={() => setStatus('Watching')} className={`text-center transition-colors ${status === 'Watching' ? 'text-green-600' : 'text-green-600'}`}>
+          <button onClick={() => setStatus('Watching')} className="text-center transition-colors text-green-600 hover:text-green-500">
             <div className="text-2xl font-bold">{watching}</div>
             <div className="text-xs">Watching</div>
           </button>
-          <button onClick={() => setStatus('Favorite')} className={`text-center transition-colors ${status === 'Favorite' ? 'text-pink-500' : 'text-pink-500'}`}>
+          <button onClick={() => setStatus('Watched')} className="text-center transition-colors text-yellow-500 hover:text-yellow-400">
+            <div className="text-2xl font-bold">{watched}</div>
+            <div className="text-xs">Watched</div>
+          </button>
+          <div className="border-l border-gray-600 h-10"></div>
+          <button onClick={() => setStatus('Favorite')} className="text-center transition-colors text-pink-500 hover:text-pink-400">
             <div className="text-2xl font-bold">{favoriteCount}</div>
             <div className="text-xs">Favorite</div>
           </button>
         </div>
-        {/* 右カラム：ジャンル＋All/Date Added/削除モード */}
         <div className="flex gap-2 items-center">
           {CATEGORY_LABELS.map(cat => (
-            <button
-              key={cat.value}
-              onClick={() => setCategory(cat.value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${category === cat.value
-                ? 'bg-primary text-white border-primary'
-                : 'bg-darkgray text-gray-300 border-gray-600 hover:bg-primary/30'
-                }`}
-            >
+            <button key={cat.value} onClick={() => setCategory(cat.value)} className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${category === cat.value ? 'bg-primary text-white border-primary' : 'bg-darkgray text-gray-300 border-gray-600 hover:bg-primary/30'}`}>
               {cat.label}
             </button>
           ))}
-          <select
-            className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none"
-            value={status}
-            onChange={e => setStatus(e.target.value)}
-          >
-            {STATUS_SELECT_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
+          <select value={sort} onChange={e => setSort(e.target.value)} className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary">
+            {SORT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
           </select>
-          <select
-            className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none"
-            value={sort}
-            onChange={e => setSort(e.target.value)}
-          >
-            {SORT_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
+          <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} className="bg-darkgray border border-gray-600 rounded-lg px-3 py-2 text-sm text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary">
+            {availableYears.map(year => {
+              const now = new Date().getFullYear();
+              let displayYear;
+              if (year === 'all') displayYear = 'すべての年';
+              else if (year === now) displayYear = '今年';
+              else if (year === now - 1) displayYear = '去年';
+              else if (year === now - 2) displayYear = '一昨年';
+              else displayYear = `${year}年`;
+              return <option key={year} value={year.toString()}>{displayYear}</option>;
+            })}
           </select>
-          <button
-            onClick={toggleDeleteMode}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap min-w-[110px] mr-0 ${isDeleteMode
-              ? 'bg-red-600 text-white border-red-600 hover:bg-red-700'
-              : 'bg-darkgray text-gray-300 border-gray-600 hover:bg-gray-700'
-              }`}
-          >
+          <button onClick={toggleDeleteMode} className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors whitespace-nowrap min-w-[110px] ${isDeleteMode ? 'bg-red-600 text-white border-red-600 hover:bg-red-700' : 'bg-darkgray text-gray-300 border-gray-600 hover:bg-gray-700'}`}>
             {isDeleteMode ? '削除モード終了' : '削除モード'}
           </button>
         </div>
       </div>
 
-      {/* 削除モードのコントロール */}
       {isDeleteMode && (
         <div className="mb-4 p-3 bg-red-900/20 border border-red-600/30 rounded-lg">
           <div className="flex flex-wrap gap-2 items-center text-sm">
-            <button
-              onClick={selectAll}
-              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              すべて選択
-            </button>
-            <button
-              onClick={deselectAll}
-              className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
-              選択解除
-            </button>
-            <button
-              onClick={deleteSelected}
-              disabled={selectedItems.size === 0}
-              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
-            >
+            <button onClick={selectAll} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">すべて選択</button>
+            <button onClick={deselectAll} className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">選択解除</button>
+            <button onClick={deleteSelected} disabled={selectedItems.size === 0} className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed">
               選択削除 ({selectedItems.size})
             </button>
-            <button
-              onClick={deleteAll}
-              disabled={filtered.length === 0}
-              className="px-3 py-1 bg-red-800 text-white rounded hover:bg-red-900 disabled:bg-gray-600 disabled:cursor-not-allowed"
-            >
-              すべて削除 ({filtered.length})
+            <button onClick={deleteAll} disabled={filteredAndSortedItems.length === 0} className="px-3 py-1 bg-red-800 text-white rounded hover:bg-red-900 disabled:bg-gray-600 disabled:cursor-not-allowed">
+              すべて削除 ({filteredAndSortedItems.length})
             </button>
           </div>
         </div>
       )}
 
-      {/* アイテムグリッド */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filtered.map((item) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {displayedItems.map(item => (
           <WatchlistItem
-            key={item.id + '-' + item.status}
+            key={item.id}
             item={item}
-            onRemove={deleteSingleItem}
+            onRemove={handleRemove}
             onStatusChange={handleStatusChange}
             favorites={favorites}
             STATUS_COLORS={STATUS_COLORS}
@@ -511,27 +416,17 @@ export default function WatchlistClient({ items }: { items: any[] }) {
             isDeleteMode={isDeleteMode}
             isSelected={selectedItems.has(item.id)}
             onToggleSelection={() => toggleItemSelection(item.id)}
-            onToggleFavorite={toggleFavorite}
+            onToggleFavorite={() => toggleFavorite(item.id)}
           />
         ))}
       </div>
-      {/* Load Moreボタン */}
-      {filtered.length > showCount && (
-        <div className="flex justify-center mt-8">
-          <button className="px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-secondary transition-colors" onClick={() => setShowCount(c => c + 12)}>
-            Load More
-          </button>
-        </div>
-      )}
 
-      {/* 削除確認モーダル */}
-      <DeleteConfirmationModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={deleteModal.onConfirm}
-        title={deleteModal.title}
-        message={deleteModal.message}
-      />
+      <div className="text-center mt-8">
+        {showCount < filteredAndSortedItems.length && (
+          <button onClick={loadMore} className="px-6 py-3 bg-primary text-white rounded-lg font-bold hover:bg-secondary transition-colors">Load More</button>
+        )}
+      </div>
+      <DeleteConfirmationModal {...deleteModal} onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))} />
     </div>
   );
 } 
