@@ -124,13 +124,13 @@ export default function AISummaryDetailPage() {
         </div>
         <div className="flex gap-4 mb-8">
           <button
-            className={`px-6 py-2 rounded-full font-bold transition-colors ${mode === 'summary' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-6 py-2 rounded-full font-bold transition-colors ${mode === 'summary' ? 'bg-white text-black' : 'bg-white text-black'}`}
             onClick={() => setMode('summary')}
           >
             要約する
           </button>
           <button
-            className={`px-6 py-2 rounded-full font-bold transition-colors ${mode === 'question' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-6 py-2 rounded-full font-bold transition-colors ${mode === 'question' ? 'bg-white text-black' : 'bg-white text-black'}`}
             onClick={() => setMode('question')}
           >
             質問する
@@ -174,7 +174,7 @@ export default function AISummaryDetailPage() {
           )}
           <button
             type="submit"
-            className="w-full max-w-lg px-6 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-bold"
+            className="w-full max-w-lg px-6 py-2 rounded-md bg-white hover:bg-gray-100 transition-colors font-bold text-black"
             disabled={isLoading || (mode === 'question' && !question)}
           >
             {isLoading ? 'AIが考え中…' : 'AIに聞く'}

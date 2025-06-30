@@ -99,7 +99,7 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   <div className="mb-4 flex gap-4">
                     <AIAssistantButton onClick={() => router.push(`/ai/summary/person/${person.id}`)} />
                     <button
-                      className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                      className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
                       onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(person.name)}`, '_blank', 'noopener,noreferrer')}
                     >
                       <FaSearch className="mr-2" /> 検索
@@ -230,9 +230,9 @@ export default function PersonClientPage({ person, credits, externalIds, knownFo
                   <div className="bg-darkgray p-4 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">フォロー</h2>
                     <div className="flex flex-col gap-3">
-                      {externalIds.instagram_id && <a href={`https://instagram.com/${externalIds.instagram_id}`} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm opacity-100"><FaInstagram className="mr-2" /> Instagram</a>}
-                      {externalIds.twitter_id && <a href={`https://twitter.com/${externalIds.twitter_id}`} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm opacity-100"><FaTwitter className="mr-2" /> Twitter</a>}
-                      {externalIds.facebook_id && <a href={`https://facebook.com/${externalIds.facebook_id}`} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm opacity-100"><FaGlobe className="mr-2" /> Website</a>}
+                      {externalIds.instagram_id && <a href={`https://instagram.com/${externalIds.instagram_id}`} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm text-black"><FaInstagram className="mr-2" /> Instagram</a>}
+                      {externalIds.twitter_id && <a href={`https://twitter.com/${externalIds.twitter_id}`} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm text-black"><FaTwitter className="mr-2" /> Twitter</a>}
+                      {externalIds.facebook_id && <a href={`https://facebook.com/${externalIds.facebook_id}`} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center justify-center font-semibold text-sm text-black"><FaGlobe className="mr-2" /> Website</a>}
                     </div>
                   </div>
                 )}

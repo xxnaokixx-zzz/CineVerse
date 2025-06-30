@@ -74,7 +74,7 @@ export default function AIRecommendationPage() {
               <button
                 type="submit"
                 disabled={!moodInput.trim()}
-                className="w-full bg-primary hover:bg-primary/80 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                className="w-full bg-white hover:bg-gray-100 disabled:bg-gray-300 disabled:cursor-not-allowed text-black font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
               >
                 <span>AIにおすすめを聞く</span>
               </button>
@@ -98,7 +98,7 @@ export default function AIRecommendationPage() {
               <div className="mt-4 text-center">
                 <button
                   onClick={handleNewRecommendation}
-                  className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg transition-colors"
+                  className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-lg transition-colors"
                 >
                   新しい推薦を求める
                 </button>

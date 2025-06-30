@@ -10,7 +10,7 @@ const AIAssistantButton: React.FC<AIAssistantButtonProps> = ({ onClick }) => {
     <button
       type="button"
       onClick={onClick}
-      className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+      className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
     >
       <FaRobot className="mr-2" /> AI要約・質問
     </button>

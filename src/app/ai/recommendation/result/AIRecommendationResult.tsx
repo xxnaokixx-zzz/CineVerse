@@ -102,7 +102,7 @@ export default function AIRecommendationResult() {
               <div className="mt-4 text-center">
                 <button
                   onClick={handleNewRecommendation}
-                  className="bg-primary hover:bg-primary/80 text-white px-6 py-3 rounded-lg transition-colors"
+                  className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-lg transition-colors"
                 >
                   新しい推薦を求める
                 </button>

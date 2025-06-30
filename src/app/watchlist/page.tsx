@@ -42,13 +42,13 @@ export default async function WatchlistPage() {
   // 本来は分離するが、ここでは簡易的に下部に記載
   return (
     <div className="bg-dark text-white font-sans">
-      <section className="bg-gradient-to-r from-primary/20 to-secondary/20 py-12">
+      <section className="bg-gradient-to-r from-primary/20 to-secondary/20 py-4">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">My Watchlist</h1>
-          <p className="text-gray-300">Track your favorite movies, anime, and TV shows</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-1">My Watchlist</h1>
+          <p className="text-gray-300 mb-1">Track your favorite movies, anime, and TV shows</p>
         </div>
       </section>
-      <section className="py-8">
+      <section className="py-4">
         <div className="container mx-auto px-4">
           {(!detailedItems || detailedItems.length === 0) ? (
             <div className="text-center text-gray-400">ウォッチリストは空です</div>

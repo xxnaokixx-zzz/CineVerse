@@ -350,7 +350,7 @@ export default function MovieDetailPage({ params }: PageProps) {
                   {trailer && (
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                      className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
                     >
                       <FaPlay className="mr-2" /> Watch Trailer
                     </button>
@@ -361,25 +361,25 @@ export default function MovieDetailPage({ params }: PageProps) {
                       onClick={handleRemoveFromWatchlist}
                       disabled={adding}
                     >
-                      <FaBookmark className="mr-2" /> Remove from Watchlist
+                      <FaBookmark className="mr-2" /> Watchlist
                     </button>
                   ) : (
                     <button
-                      className={`bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-white${adding ? ' opacity-60 cursor-not-allowed' : ''}`}
+                      className={`bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black${adding ? ' opacity-60 cursor-not-allowed' : ''}`}
                       onClick={handleAddToWatchlist}
                       disabled={adding}
                     >
-                      <FaBookmark className="mr-2" /> {adding ? 'Adding...' : 'Add to Watchlist'}
+                      <FaBookmark className="mr-2" /> {adding ? 'Adding...' : 'Watchlist'}
                     </button>
                   )}
                   <button
-                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
                     onClick={handleVodModalOpen}
                   >
                     <FaTv className="mr-2" /> VOD
                   </button>
                   <button
-                    className="bg-white/10 hover:bg-white/20 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm opacity-100"
+                    className="bg-white hover:bg-gray-100 transition-colors px-6 py-3 rounded-full flex items-center font-semibold text-sm text-black"
                     onClick={() => window.open(`https://www.google.com/search?q=${encodeURIComponent(movie.title + ' 映画')}`, '_blank', 'noopener,noreferrer')}
                   >
                     <FaSearch className="mr-2" /> 検索
@@ -394,10 +394,10 @@ export default function MovieDetailPage({ params }: PageProps) {
         <section className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-white">
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-bold mb-4">ストーリー</h2>
+              <h2 className="text-2xl font-bold mb-4">STORY</h2>
               <p className="text-gray-400 leading-relaxed mb-8">{movie.overview}</p>
 
-              <h2 className="text-2xl font-bold mb-4">キャスト・スタッフ</h2>
+              <h2 className="text-2xl font-bold mb-4">CAST & CREW</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {credits?.cast.slice(0, 8).map((actor) => (
                   <Link key={actor.id} href={`/person/${actor.id}`} className="block group">

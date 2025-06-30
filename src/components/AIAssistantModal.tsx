@@ -141,7 +141,7 @@ const AIAssistantModal: React.FC<AIAssistantModalProps> = ({ isOpen, onClose, ti
 
           <button
             type="submit"
-            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:opacity-50 font-bold text-lg"
+            className="w-full py-2 bg-white hover:bg-gray-100 text-black rounded transition disabled:opacity-50 font-bold text-lg"
             disabled={isLoading || (mode === 'question' && !question)}
           >
             {isLoading ? 'AIが考え中…' : 'AIに聞く'}

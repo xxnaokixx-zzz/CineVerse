@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 interface AccountClientProps {
@@ -34,6 +34,9 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
   const [editFirstName, setEditFirstName] = useState(firstName);
   const [editLastName, setEditLastName] = useState(lastName);
   const [showNameModal, setShowNameModal] = useState(!initialFirstName || !initialLastName);
+  const searchParams = useSearchParams();
+  const initialStatus = searchParams?.get('status') || 'all';
+  const [status, setStatus] = useState(initialStatus);
 
   // セッション監視を追加
   useEffect(() => {
@@ -71,6 +74,10 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
   useEffect(() => {
     setShowNameModal(!firstName && !lastName);
   }, [firstName, lastName]);
+
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [initialStatus]);
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -341,25 +348,44 @@ export default function AccountClient({ user, avatarUrl, counts, firstName: init
 
               {/* Account Stats */}
               <div className="space-y-6">
-                <div className="bg-darkgray rounded-lg p-6">
-                  <h3 className="text-xl font-bold mb-4">Account Statistics</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-500 mb-1">{counts.watched}</div>
-                      <div className="text-sm text-gray-400">Watched</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-yellow-500 mb-1">{counts.toWatch}</div>
-                      <div className="text-sm text-gray-400">To Watch</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-500 mb-1">{counts.watching}</div>
-                      <div className="text-sm text-gray-400">Watching</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-pink-500 mb-1">{counts.favorites}</div>
-                      <div className="text-sm text-gray-400">Favorites</div>
-                    </div>
+                <div className="bg-darkgray rounded-lg p-6 flex flex-col items-center">
+                  <h2 className="text-2xl font-bold mb-3 text-center">Account Statistics</h2>
+                  <div className="flex flex-row justify-center gap-10">
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=all')}
+                    >
+                      <div className="text-2xl font-bold text-white mb-1">{counts.watchlist}</div>
+                      <div className="text-xs text-white">All</div>
+                    </button>
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=Watched')}
+                    >
+                      <div className="text-2xl font-bold text-blue-500 mb-1">{counts.watched}</div>
+                      <div className="text-xs text-blue-500">Watched</div>
+                    </button>
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=To%20Watch')}
+                    >
+                      <div className="text-2xl font-bold text-yellow-500 mb-1">{counts.toWatch}</div>
+                      <div className="text-xs text-yellow-500">To Watch</div>
+                    </button>
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=Watching')}
+                    >
+                      <div className="text-2xl font-bold text-green-600 mb-1">{counts.watching}</div>
+                      <div className="text-xs text-green-600">Watching</div>
+                    </button>
+                    <button
+                      className="text-center transition-colors"
+                      onClick={() => router.push('/watchlist?status=Favorite')}
+                    >
+                      <div className="text-2xl font-bold text-pink-500 mb-1">{counts.favorites}</div>
+                      <div className="text-xs text-pink-500">Favorite</div>
+                    </button>
                   </div>
                 </div>
               </div>

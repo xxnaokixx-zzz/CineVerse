@@ -68,7 +68,7 @@ export default function AISummaryPageClient() {
         />
         <button
           type="submit"
-          className="w-full max-w-lg px-6 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors font-bold"
+          className="w-full max-w-lg px-6 py-2 rounded-md bg-white hover:bg-gray-100 transition-colors font-bold text-black"
           disabled={isLoading}
         >
           {isLoading ? '検索中...' : '検索'}
